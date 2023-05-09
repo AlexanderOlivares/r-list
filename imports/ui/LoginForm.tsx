@@ -4,41 +4,50 @@ const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
   };
 
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log(`Username: ${username}, Password: ${password}`);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    Meteor.loginWithPassword(username, password);
     // Perform login logic here
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="login-form">
       <div>
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="username">Username</label>
+
         <input
           type="text"
-          id="username"
-          value={username}
-          onChange={handleUsernameChange}
+          placeholder="Username"
+          name="username"
+          required
+          onChange={(e) => setUsername(e.target.value)}
         />
       </div>
+
       <div>
-        <label htmlFor="password">Password:</label>
+        <label htmlFor="password">Password</label>
+
         <input
           type="password"
-          id="password"
-          value={password}
-          onChange={handlePasswordChange}
+          placeholder="Password"
+          name="password"
+          required
+          onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      <button type="submit">Login</button>
+
+      <div>
+        <button type="submit">Log In</button>
+      </div>
     </form>
   );
 };
