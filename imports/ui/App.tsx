@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import LoginForm from "./LoginForm"
+import SignupForm from "./SignupForm"
 import Profile from "./Profile"
 import { Task } from './Task';
 import TaskForm from './TaskForm';
@@ -49,7 +49,7 @@ export const App = () => {
           </ul>
         </>
       ) : (
-        <LoginForm />
+        <SignupForm />
       )}
     </div>
 
