@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Accounts } from 'meteor/accounts-base';
 import { Meteor } from 'meteor/meteor';
 
-const LoginForm = () => {
+const Signup = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,4 +69,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default Signup;

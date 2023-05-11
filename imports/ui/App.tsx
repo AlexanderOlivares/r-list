@@ -1,57 +1,42 @@
-import React, { useState } from 'react';
-import SignupForm from "./SignupForm"
+import React from 'react';
+import Signup from "./Signup"
+import Login from "./Login"
 import Profile from "./Profile"
-import { Task } from './Task';
 import TaskForm from './TaskForm';
 import { useTracker } from 'meteor/react-meteor-data';
-import { TasksCollection } from '../api/TasksCollection';
+import { Meteor } from 'meteor/meteor';
+
+import {
+  BrowserRouter as Router, Routes, Route, Navigate
+} from "react-router-dom";
+
 
 export const App = () => {
-  const tasks = useTracker(() => TasksCollection.find({}).fetch());
-  const user = useTracker(() => Meteor.user());
-
-  const [task, setTask] = useState("");
-
-  function handleInputChange(event) {
-    setTask(event.target.value);
-  }
-
-  function handleFormSubmit(event) {
-    event.preventDefault();
-    console.log(task);
-    tasks.push({ _id: Math.random(), text: task });
-    // add the task to your state or send it to a server
-  }
-
+  const loggedInUser = useTracker(() => Meteor.user());
+  console.log("loggedInUser ", loggedInUser)
 
   return (
-
-    <div className="main">
-      {user ? (
-        <>
-          <TaskForm />
-
-          {/* <div className="filter">
-          <button onClick={() => setHideCompleted(!hideCompleted)}>
-            {hideCompleted ? 'Show All' : 'Hide Completed'}
-          </button>
-        </div> */}
-
-          <ul className="tasks">
-            {tasks.map(task => (
-              <Task
-                key={task._id}
-                task={task}
-              // onCheckboxClick={toggleChecked}
-              // onDeleteClick={deleteTask}
-              />
-            ))}
-          </ul>
-        </>
-      ) : (
-        <SignupForm />
-      )}
-    </div>
-
+    <>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={<Login />}
+          />
+          <Route
+            path="signup"
+            element={<Signup />}
+          />
+          <Route
+            path="lists/:listId"
+            element={loggedInUser ? <TaskForm /> : <Navigate replace to={"/"} />}
+          />
+          <Route
+            path="profile/:userId"
+            element={loggedInUser ? <Profile /> : <Navigate replace to={"/"} />}
+          />
+        </Routes>
+      </Router>
+    </>
   )
 };
