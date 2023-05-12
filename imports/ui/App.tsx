@@ -3,8 +3,7 @@ import Signup from "./Signup"
 import Login from "./Login"
 import Profile from "./Profile"
 import TaskForm from './TaskForm';
-import { useTracker } from 'meteor/react-meteor-data';
-import { Meteor } from 'meteor/meteor';
+import { useUserContext } from "../../context/UserContext"
 
 import {
   BrowserRouter as Router, Routes, Route, Navigate
@@ -12,8 +11,9 @@ import {
 
 
 export const App = () => {
-  const loggedInUser = useTracker(() => Meteor.user());
-  console.log("loggedInUser ", loggedInUser)
+  const userContext = useUserContext();
+  const isAuth = userContext.state;
+  console.log("isAuth ", userContext.state)
 
   return (
     <>
@@ -29,11 +29,11 @@ export const App = () => {
           />
           <Route
             path="lists/:listId"
-            element={loggedInUser ? <TaskForm /> : <Navigate replace to={"/"} />}
+            element={isAuth ? <TaskForm /> : <Login />}
           />
           <Route
             path="profile/:userId"
-            element={loggedInUser ? <Profile /> : <Navigate replace to={"/"} />}
+            element={isAuth ? <Profile /> : <Navigate replace to={"/"} />}
           />
         </Routes>
       </Router>

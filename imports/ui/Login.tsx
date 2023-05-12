@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useNavigate } from 'react-router-dom';
+import { useUserContext } from "../../context/UserContext"
 
 const Login = () => {
   const navigate = useNavigate();
+  const userContext = useUserContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -17,6 +19,12 @@ const Login = () => {
         console.log(error.message);
       } else {
         console.log(`Login success`);
+        const user = Meteor.user();
+        userContext.dispatch({
+          type: "login",
+          payload: user
+        })
+        navigate(`/profile/${user.username}`)
       }
     });
   };
