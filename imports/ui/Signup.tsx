@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Accounts } from 'meteor/accounts-base';
 import { Meteor } from 'meteor/meteor';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const user = {
@@ -16,11 +17,12 @@ const Signup = () => {
       password
     }
 
-    Meteor.call('addUser', user, (error, result) => {
+    Meteor.call('addUser', user, (error: Meteor.Error | null, result: Meteor.User) => {
       if (error) {
         console.log(error.reason);
       } else {
         console.log(`User added with ID ${result}`);
+        navigate(`/profile/${result.username}`)
       }
     });
   };

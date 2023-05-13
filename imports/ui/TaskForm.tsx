@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { TasksCollection } from '../api/TasksCollection';
+import { TasksCollection } from '../api/collections/TasksCollection';
 
 const TaskForm = () => {
   const [text, setText] = useState("");
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!text) return;

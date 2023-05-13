@@ -11,7 +11,7 @@ const Login = () => {
 
   const goToSignup = () => navigate("/signup")
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     Meteor.loginWithPassword(email, password, (error) => {
@@ -20,6 +20,7 @@ const Login = () => {
       } else {
         console.log(`Login success`);
         const user = Meteor.user();
+        if (!user) return navigate(`/`);
         userContext.dispatch({
           type: "login",
           payload: user
