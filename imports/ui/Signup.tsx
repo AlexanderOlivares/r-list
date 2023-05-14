@@ -17,12 +17,13 @@ const Signup = () => {
       password
     }
 
-    Meteor.call('addUser', user, (error: Meteor.Error | null, result: Meteor.User) => {
+    Meteor.call('user.addUser', user, (error: Meteor.Error | null, result: Meteor.User) => {
       if (error) {
         console.log(error.reason);
       } else {
-        console.log(`User added with ID ${result}`);
-        navigate(`/profile/${result.username}`)
+        console.log("result ", result)
+        console.log(`User added with ID ${result}. Please login`);
+        navigate(`/`)
       }
     });
   };
