@@ -4,12 +4,15 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { useUserContext } from "../../context/UserContext"
 import { Meteor } from 'meteor/meteor';
 import { Task } from './Task';
+import { useParams } from 'react-router-dom';
 
 
 const TaskForm = () => {
   const userContext = useUserContext();
   const { _id: userId } = userContext.state ?? {};
   const [text, setText] = useState("");
+  const { listId } = useParams();
+
 
   const { tasks } = useTracker(() => {
 
@@ -20,17 +23,13 @@ const TaskForm = () => {
     }
 
     const handler = Meteor.subscribe('tasks');
-    console.log(handler.ready());
 
     if (!handler.ready()) {
       return { ...noDataAvailable, isLoading: true };
     }
 
-    console.log("am i being called????")
-
-    // is this using the handler? 
     const tasks = TasksCollection.find(
-      { userId },
+      { userId, listId },
       {
         sort: { createdAt: -1 },
       }
@@ -41,17 +40,18 @@ const TaskForm = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!text) return;
-    //  TasksCollection.insert({
-    //       text: text.trim(),
-    //       createdAt: new Date()
 
-    //     });
+    const task = {
+      text,
+      listId,
+      userId,
+      lastEditedBy: userId,
+      lastEditedAt: new Date,
 
-    // Meteor.call('tasks.insert', text);
-    // setText("");
-    Meteor.call('tasks.insert', text, (error: Meteor.Error | null, result: Meteor.User) => {
+    }
+
+    Meteor.call('tasks.insert', task, (error: Meteor.Error, result: Meteor.User) => {
       if (error) {
         console.log(error.reason);
       } else {
@@ -61,7 +61,6 @@ const TaskForm = () => {
     })
 
   };
-  console.log(tasks)
 
   return (
     <>
