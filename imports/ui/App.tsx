@@ -8,6 +8,7 @@ import { useUserContext } from "../../context/UserContext"
 import {
   BrowserRouter as Router, Routes, Route, Navigate
 } from "react-router-dom";
+import Nav from './Nav';
 
 
 export const App = () => {
@@ -18,6 +19,7 @@ export const App = () => {
   return (
     <>
       <Router>
+        <Nav />
         <Routes>
           <Route
             path="/"

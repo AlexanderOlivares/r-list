@@ -36,7 +36,6 @@ const Login = () => {
       <div>
         <h1>Welcome to R-List</h1>
         <h4>Share your lists with friends</h4>
-        <button onClick={goToSignup}>Sign Up</button>
       </div>
       <form onSubmit={handleSubmit} className="login-form">
         <div>
@@ -62,8 +61,9 @@ const Login = () => {
           />
         </div>
 
-        <div>
+        <div style={{ display: "flex" }}>
           <button type="submit">Log In</button>
+          <button onClick={goToSignup}>Sign Up</button>
         </div>
       </form>
     </>

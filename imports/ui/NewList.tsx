@@ -61,7 +61,7 @@ export default function NewList() {
         name="editors"
       />
 
-      <button type="submit">New Task</button>
+      <button type="submit">Create List</button>
     </form>
   )
 }

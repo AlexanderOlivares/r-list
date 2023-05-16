@@ -44,7 +44,6 @@ function Profile() {
   return (
     <>
       <div>
-        <Logout />
         <h1> Profile </h1>
         <h3>{username}</h3>
         <NewList />
@@ -65,6 +64,9 @@ function Profile() {
           )
         })
       )}
+      <div>
+        <h3>Team lists</h3>
+      </div>
     </>
   );
 }
