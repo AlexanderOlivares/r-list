@@ -7,7 +7,7 @@ Meteor.methods({
   'lists.insert'(newList: INewList) {
     const {listName, editors, editorsCanInvite } = newList
     check(listName, String);
-    check(editors, [String]);
+    check(editors, [{email: String, isBanned: Boolean}]);
     check(editorsCanInvite, Boolean);
 
     if (!this.userId) {

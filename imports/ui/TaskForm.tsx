@@ -29,7 +29,7 @@ const TaskForm = () => {
     }
 
     const tasks = TasksCollection.find(
-      { userId, listId },
+      { listId },
       {
         sort: { createdAt: -1 },
       }

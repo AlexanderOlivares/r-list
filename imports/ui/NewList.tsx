@@ -2,9 +2,17 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 
+interface IEditors {
+  email: string;
+  isBanned: boolean;
+  // Editor may not have account yet
+  editorId?: string;
+  editorUsername?: string;
+}
+
 export interface INewList {
   listName: string;
-  editors: string[];
+  editors: IEditors[];
   editorsCanInvite: boolean,
 }
 
@@ -16,9 +24,18 @@ export default function NewList() {
   const makeNewList = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const editors: IEditors[] = editorsEmailAddresses.map(email => {
+      // TODO check if editors email is in db
+      // if so, add editor's _id and username here
+      return {
+        email,
+        isBanned: false
+      }
+    })
+
     const newList: INewList = {
       listName,
-      editors: editorsEmailAddresses,
+      editors,
       editorsCanInvite: false,
     }
 
@@ -28,10 +45,7 @@ export default function NewList() {
         console.log(error.reason);
       } else {
         const listId = result;
-        console.log("list insert result ", result)
         navigate(`/lists/${listId}`)
-        setListName("");
-        setEditorsEmailAddresses([]);
       }
     })
   }
@@ -50,7 +64,7 @@ export default function NewList() {
         value={listName}
         onChange={(e) => setListName(e.target.value)}
         type="text"
-        placeholder="Type to add new tasks"
+        placeholder="Grocery List"
       />
       <h5>Invite friends to edit</h5>
       <input

@@ -1,5 +1,4 @@
 import React from "react";
-import Logout from "./Logout"
 import { useUserContext } from "../../context/UserContext"
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
@@ -11,15 +10,20 @@ import { ListsCollection } from "../api/collections/ListsCollection";
 function Profile() {
   const userContext = useUserContext();
   const navigate = useNavigate();
-  const { username } = userContext.state ?? {};
+  const { username, _id: userId } = userContext.state ?? {};
+
 
   const { lists, loading } = useTracker(() => {
 
     const noDataAvailable = { lists: [], loading: false };
 
-    if (!Meteor.user()) {
+    const user = Meteor.user();
+
+    if (!user) {
       return noDataAvailable;
     }
+
+    const userEmail = user?.emails ? user.emails[0].address : undefined;
 
     const handler = Meteor.subscribe('lists');
 
@@ -28,7 +32,12 @@ function Profile() {
     }
 
     const foundLists = ListsCollection.find(
-      { ownerId: userContext.state?._id },
+      {
+        $or: [
+          { ownerId: userId },
+          { editors: { $in: [userEmail] } },
+        ]
+      },
       {
         sort: { createdAt: -1 },
       }
@@ -50,23 +59,37 @@ function Profile() {
       </div>
 
       <div>
-        <h3>My Lists</h3>
+        <h3>Lists I Made</h3>
       </div>
       {loading ? (
         <h1>loading lists...</h1>
       ) : (
-        lists.map(list => {
-          return (
-            <div key={list._id}>
-              <p>{list.listName}</p>
-              <button onClick={() => goToList(list._id)}>Go to list</button>
-            </div>
-          )
-        })
+        lists.filter(list => list.ownerId === userId)
+          .map(list => {
+            return (
+              <div key={list._id}>
+                <p>{list.listName}</p>
+                <button onClick={() => goToList(list._id)}>Go to list</button>
+              </div>
+            )
+          })
       )}
       <div>
-        <h3>Team lists</h3>
+        <h3>Lists I Can Edit</h3>
       </div>
+      {loading ? (
+        <h1>loading lists...</h1>
+      ) : (
+        lists.filter(list => list.ownerId !== userId)
+          .map(list => {
+            return (
+              <div key={list._id}>
+                <p>{list.listName}</p>
+                <button onClick={() => goToList(list._id)}>Go to list</button>
+              </div>
+            )
+          })
+      )}
     </>
   );
 }
