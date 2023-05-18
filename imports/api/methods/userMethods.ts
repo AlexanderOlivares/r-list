@@ -16,4 +16,12 @@ Meteor.methods({
 
     return userId;
   },
+  'user.findUser': (email) => {
+    check(email, String);
+    const user = Meteor.users.findOne({ 'emails.address': email });
+    if (!user) {
+      throw new Meteor.Error('user-not-found', 'User not found');
+    }
+    return user;
+  },
 });

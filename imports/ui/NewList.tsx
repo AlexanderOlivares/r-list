@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 
-interface IEditors {
+interface IEditor {
   email: string;
-  isBanned: boolean;
   // Editor may not have account yet
   editorId?: string;
   editorUsername?: string;
@@ -12,7 +11,7 @@ interface IEditors {
 
 export interface INewList {
   listName: string;
-  editors: IEditors[];
+  editors: IEditor[];
   editorsCanInvite: boolean,
 }
 
@@ -20,34 +19,61 @@ export default function NewList() {
   const navigate = useNavigate();
   const [listName, setListName] = useState("");
   const [editorsEmailAddresses, setEditorsEmailAddresses] = useState<string[]>([]);
+  const [editorsCanInvite, setEditorsCanInvite] = useState(true);
 
   const makeNewList = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const editors: IEditors[] = editorsEmailAddresses.map(email => {
-      // TODO check if editors email is in db
-      // if so, add editor's _id and username here
-      return {
-        email,
-        isBanned: false
+    (async () => {
+      const editors: IEditor[] = await Promise.all(
+        editorsEmailAddresses.map(async (email) => {
+
+          const editorBase: IEditor = { email }
+
+          try {
+            let editorId, editorUsername;
+
+            await new Promise<Meteor.User>((resolve, reject) => {
+              Meteor.call('user.findUser', email, (error: Meteor.Error, result: Meteor.User) => {
+                if (error) {
+                  console.log(error.reason);
+                  reject(error);
+                } else {
+                  editorId = result._id;
+                  editorUsername = result.username;
+                  resolve(result);
+                }
+              });
+            });
+
+            return {
+              ...editorBase,
+              ...(editorId ? { editorId } : {}),
+              ...(editorUsername ? { editorUsername } : {})
+            }
+          } catch (error) {
+            console.log(error);
+            return editorBase
+          }
+        })
+      );
+
+      const newList: INewList = {
+        listName,
+        editors,
+        editorsCanInvite
       }
-    })
 
-    const newList: INewList = {
-      listName,
-      editors,
-      editorsCanInvite: false,
-    }
+      Meteor.call('lists.insert', newList, (error: Meteor.Error, result: string) => {
+        if (error) {
+          console.log(error.reason);
+        } else {
+          const listId = result;
+          navigate(`/lists/${listId}`)
+        }
+      })
+    })();
 
-
-    Meteor.call('lists.insert', newList, (error: Meteor.Error | null, result: string) => {
-      if (error) {
-        console.log(error.reason);
-      } else {
-        const listId = result;
-        navigate(`/lists/${listId}`)
-      }
-    })
   }
 
   const handleEditorEmails: React.ChangeEventHandler<HTMLInputElement> = (e) => {

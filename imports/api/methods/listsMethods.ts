@@ -1,4 +1,4 @@
-import { check } from "meteor/check";
+import { check, Match } from "meteor/check";
 import { Meteor } from "meteor/meteor";
 import { ListsCollection } from "../collections/ListsCollection";
 import { INewList } from "/imports/ui/NewList";
@@ -7,7 +7,7 @@ Meteor.methods({
   'lists.insert'(newList: INewList) {
     const {listName, editors, editorsCanInvite } = newList
     check(listName, String);
-    check(editors, [{email: String, isBanned: Boolean}]);
+    check(editors, [{email: String, editorId: Match.Optional(String), editorUsername: Match.Optional(String)}]);
     check(editorsCanInvite, Boolean);
 
     if (!this.userId) {

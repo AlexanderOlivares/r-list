@@ -48,7 +48,6 @@ const TaskForm = () => {
       userId,
       lastEditedBy: userId,
       lastEditedAt: new Date,
-
     }
 
     Meteor.call('tasks.insert', task, (error: Meteor.Error, result: Meteor.User) => {

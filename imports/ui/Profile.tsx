@@ -35,7 +35,7 @@ function Profile() {
       {
         $or: [
           { ownerId: userId },
-          { editors: { $in: [userEmail] } },
+          { editors: { $elemMatch: { email: userEmail } } },
         ]
       },
       {
