@@ -6,10 +6,14 @@ import { UserContextProvider } from '../context/UserContext';
 
 Meteor.startup(() => {
   const container = document.getElementById('react-target');
-  const root = createRoot(container);
-  root.render(
-    <UserContextProvider>
-      <App />
-    </UserContextProvider>
-  );
+  if (container instanceof HTMLElement) {
+    const root = createRoot(container);
+    root.render(
+      <UserContextProvider>
+        <App />
+      </UserContextProvider>
+    );
+  } else {
+    console.error("Element 'react-target' not found.")
+  }
 });
