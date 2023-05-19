@@ -5,6 +5,8 @@ import { useUserContext } from "../../context/UserContext"
 import { Meteor } from 'meteor/meteor';
 import { Task } from './Task';
 import { useParams } from 'react-router-dom';
+import { ListsCollection } from '../api/collections/ListsCollection';
+import { IEditor } from "./NewList"
 
 
 const TaskForm = () => {
@@ -14,17 +16,16 @@ const TaskForm = () => {
   const { listId } = useParams();
 
 
-  const { tasks } = useTracker(() => {
+  const { list, tasks, isListOwner } = useTracker(() => {
 
-    const noDataAvailable = { tasks: [], pendingTasksCount: 0 };
+    const noDataAvailable = { list: undefined, tasks: [], isListOwner: false, isLoading: false };
 
-    if (!Meteor.user()) {
-      return noDataAvailable;
-    }
+    if (!Meteor.user()) return noDataAvailable;
 
     const handler = Meteor.subscribe('tasks');
+    const listHandler = Meteor.subscribe('lists');
 
-    if (!handler.ready()) {
+    if (!handler.ready() || !listHandler.ready()) {
       return { ...noDataAvailable, isLoading: true };
     }
 
@@ -35,7 +36,18 @@ const TaskForm = () => {
       }
     ).fetch();
 
-    return { loading: false, tasks };
+    const list = ListsCollection.findOne(
+      { _id: listId },
+      {
+        sort: { createdAt: -1 },
+      }
+    )
+
+    if (!list) return noDataAvailable;
+
+    const isListOwner = list.ownerId === userId;
+
+    return { list, isLoading: false, tasks, isListOwner };
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -61,8 +73,41 @@ const TaskForm = () => {
 
   };
 
+  const banUser = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const usernameOrEmail = e.currentTarget.textContent;
+    const banUserProps = {
+      usernameOrEmail,
+      listId
+    }
+    Meteor.call('lists.banEditor', banUserProps, (error: Meteor.Error) => {
+      if (error) {
+        console.log(error.reason);
+      } else {
+        console.log(`${usernameOrEmail} was banned from this list`)
+      }
+    })
+  }
+
   return (
     <>
+      <div>
+        <h1>{list?.listName}</h1>
+      </div>
+      <div>
+        <h4>Editors</h4>
+        {list?.editors.map((editor: IEditor, i: number) =>
+          <p key={`${editor.email}-${i}`}>{editor.editorUsername ? editor.editorUsername : editor.email}</p>
+        )}
+      </div>
+      {isListOwner && (
+        <div style={{ marginBottom: "10px" }}>
+          <h4>Ban Users</h4>
+          {list?.editors.map((editor: IEditor, i: number) =>
+            <button onClick={banUser} key={`${editor.email}+${i}`}>{editor.editorUsername ? editor.editorUsername : editor.email}</button>
+
+          )}
+        </div>
+      )}
       <form className="task-form" onSubmit={handleSubmit}>
         <input
           value={text}

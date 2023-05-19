@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 
-interface IEditor {
+export interface IEditor {
   email: string;
   // Editor may not have account yet
   editorId?: string;
@@ -82,6 +82,8 @@ export default function NewList() {
 
     setEditorsEmailAddresses([emails]);
   }
+
+  // TODO make input to use setEditorsCanInvite
 
   return (
     <form className="task-form" onSubmit={makeNewList}>

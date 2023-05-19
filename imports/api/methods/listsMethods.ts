@@ -25,4 +25,27 @@ Meteor.methods({
 
     return listId;
   },
+  'lists.banEditor'({ listId, usernameOrEmail}) {
+    check(usernameOrEmail, String);
+    check(listId, String);
+
+    const user = Meteor.users.findOne({
+      $or: [
+        { 'emails.address': usernameOrEmail },
+        { 'username': usernameOrEmail },
+      ],
+    });
+
+    if (!user) {
+      throw new Meteor.Error('Error banning user');
+    }
+
+    const banned = ListsCollection.update(
+      { _id: listId }, 
+      { $pull: { editors: { $or: [ { email: usernameOrEmail }, { editorUsername: usernameOrEmail} ] }}}
+    )
+
+    return banned;
+   
+  },
 });
