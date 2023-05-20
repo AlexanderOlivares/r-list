@@ -6,7 +6,7 @@ const defualtState = null;
 
 export type AuthAction = {
   type: string;
-  payload: Meteor.User;
+  payload: Meteor.User | null;
 };
 
 type Dispatch = (action: AuthAction) => void;

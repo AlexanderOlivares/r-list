@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { Meteor } from 'meteor/meteor';
 import { App } from '../imports/ui/App';
 import { UserContextProvider } from '../context/UserContext';
+import 'antd/dist/antd.css';
+
 
 Meteor.startup(() => {
   const container = document.getElementById('react-target');

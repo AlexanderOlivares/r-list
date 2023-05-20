@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
-import { Meteor } from 'meteor/meteor';
-import { useNavigate } from 'react-router-dom';
-import { useUserContext } from "../../context/UserContext"
+import React from "react";
+import { Meteor } from "meteor/meteor";
+import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../../context/UserContext";
+import { Button, Form, Input } from "antd";
+
+interface ILoginFormProps {
+  email: string;
+  password: string;
+}
 
 const Login = () => {
   const navigate = useNavigate();
   const userContext = useUserContext();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  const goToSignup = () => navigate("/signup")
+  const goToSignup = () => navigate("/signup");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = (e: ILoginFormProps) => {
+    const { email, password } = e;
 
-    Meteor.loginWithPassword(email, password, (error) => {
+    Meteor.loginWithPassword(email, password, error => {
       if (error) {
         console.log(error.message);
       } else {
@@ -23,50 +27,84 @@ const Login = () => {
         if (!user) return navigate(`/`);
         userContext.dispatch({
           type: "login",
-          payload: user
-        })
-        navigate(`/profile/${user.username}`)
+          payload: user,
+        });
+        navigate(`/profile/${user.username}`);
       }
     });
   };
 
+  const onFinishFailed = (errorInfo: any) => {
+    console.log("Failed:", errorInfo);
+  };
 
   return (
-    <>
-      <div>
-        <h1>Welcome to R-List</h1>
-        <h4>Share your lists with friends</h4>
-      </div>
-      <form onSubmit={handleSubmit} className="login-form">
-        <div>
-          <label htmlFor="email">Email</label>
+    <div style={{ width: "100%" }}>
+      <Form
+        name="basic"
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 16 }}
+        initialValues={{ remember: true }}
+        onFinish={handleSubmit}
+        onFinishFailed={onFinishFailed}
+        autoComplete="off"
+      >
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Please input your email!" },
+            {
+              type: "email",
+              message: "Please enter a valid email address!",
+            },
+          ]}
+        >
+          <Input size="large" />
+        </Form.Item>
+        {/* <Form.Item
+        label="Username"
+        name="username"
+        rules={[
+          { required: true, message: "Please input your username!" },
+          {
+            min: 6,
+            message: "Username must be at least 6 characters long!",
+          },
+          {
+            max: 20,
+            message: "Username cannot exceed 20 characters!",
+          },
+        ]}
+      >
+        <Input size="large" />
+      </Form.Item> */}
 
-          <input
-            type="email"
-            placeholder="Email"
-            name="email"
-            required
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: "Please input your password!" },
+            {
+              min: 6,
+              message: "Password must be at least 6 characters long!",
+            },
+            {
+              max: 20,
+              message: "Password cannot exceed 20 characters!",
+            },
+          ]}
+        >
+          <Input.Password size="large" />
+        </Form.Item>
 
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-
-        <div style={{ display: "flex" }}>
-          <button type="submit">Log In</button>
-          <button onClick={goToSignup}>Sign Up</button>
-        </div>
-      </form>
-    </>
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Login
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
 
