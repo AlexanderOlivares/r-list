@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { TasksCollection } from '../api/collections/TasksCollection';
-import { useTracker } from 'meteor/react-meteor-data';
-import { useUserContext } from "../../context/UserContext"
-import { Meteor } from 'meteor/meteor';
-import { Task } from './Task';
-import { useParams } from 'react-router-dom';
-import { ListsCollection } from '../api/collections/ListsCollection';
-import { IEditor } from "./NewList"
-
+import React, { useState } from "react";
+import { TasksCollection } from "../api/collections/TasksCollection";
+import { useTracker } from "meteor/react-meteor-data";
+import { useUserContext } from "../../context/UserContext";
+import { Meteor } from "meteor/meteor";
+import { Task } from "./Task";
+import { useParams } from "react-router-dom";
+import { ListsCollection } from "../api/collections/ListsCollection";
+import { IEditor } from "./NewList";
 
 const TaskForm = () => {
   const userContext = useUserContext();
@@ -15,15 +14,13 @@ const TaskForm = () => {
   const [text, setText] = useState("");
   const { listId } = useParams();
 
-
   const { list, tasks, isListOwner } = useTracker(() => {
-
     const noDataAvailable = { list: undefined, tasks: [], isListOwner: false, isLoading: false };
 
-    if (!Meteor.user()) return noDataAvailable;
+    if (!userId) return noDataAvailable;
 
-    const handler = Meteor.subscribe('tasks');
-    const listHandler = Meteor.subscribe('lists');
+    const handler = Meteor.subscribe("tasks");
+    const listHandler = Meteor.subscribe("lists");
 
     if (!handler.ready() || !listHandler.ready()) {
       return { ...noDataAvailable, isLoading: true };
@@ -41,7 +38,7 @@ const TaskForm = () => {
       {
         sort: { createdAt: -1 },
       }
-    )
+    );
 
     if (!list) return noDataAvailable;
 
@@ -59,34 +56,33 @@ const TaskForm = () => {
       listId,
       userId,
       lastEditedBy: userId,
-      lastEditedAt: new Date,
-    }
+      lastEditedAt: new Date(),
+    };
 
-    Meteor.call('tasks.insert', task, (error: Meteor.Error, result: Meteor.User) => {
+    Meteor.call("tasks.insert", task, (error: Meteor.Error, result: Meteor.User) => {
       if (error) {
         console.log(error.reason);
       } else {
-        console.log("task insert result ", result)
+        console.log("task insert result ", result);
         setText("");
       }
-    })
-
+    });
   };
 
   const banUser = (e: React.MouseEvent<HTMLButtonElement>) => {
     const usernameOrEmail = e.currentTarget.textContent;
     const banUserProps = {
       usernameOrEmail,
-      listId
-    }
-    Meteor.call('lists.banEditor', banUserProps, (error: Meteor.Error) => {
+      listId,
+    };
+    Meteor.call("lists.banEditor", banUserProps, (error: Meteor.Error) => {
       if (error) {
         console.log(error.reason);
       } else {
-        console.log(`${usernameOrEmail} was banned from this list`)
+        console.log(`${usernameOrEmail} was banned from this list`);
       }
-    })
-  }
+    });
+  };
 
   return (
     <>
@@ -95,23 +91,26 @@ const TaskForm = () => {
       </div>
       <div>
         <h4>Editors</h4>
-        {list?.editors.map((editor: IEditor, i: number) =>
-          <p key={`${editor.email}-${i}`}>{editor.editorUsername ? editor.editorUsername : editor.email}</p>
-        )}
+        {list?.editors.map((editor: IEditor, i: number) => (
+          <p key={`${editor.email}-${i}`}>
+            {editor.editorUsername ? editor.editorUsername : editor.email}
+          </p>
+        ))}
       </div>
       {isListOwner && (
         <div style={{ marginBottom: "10px" }}>
           <h4>Ban Users</h4>
-          {list?.editors.map((editor: IEditor, i: number) =>
-            <button onClick={banUser} key={`${editor.email}+${i}`}>{editor.editorUsername ? editor.editorUsername : editor.email}</button>
-
-          )}
+          {list?.editors.map((editor: IEditor, i: number) => (
+            <button onClick={banUser} key={`${editor.email}+${i}`}>
+              {editor.editorUsername ? editor.editorUsername : editor.email}
+            </button>
+          ))}
         </div>
       )}
       <form className="task-form" onSubmit={handleSubmit}>
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={e => setText(e.target.value)}
           type="text"
           placeholder="Type to add new tasks"
         />
@@ -121,12 +120,9 @@ const TaskForm = () => {
       {tasks.length > 0 && (
         <div>
           <ul>
-            {tasks.map((task) => {
-              return (
-                <Task key={task._id} props={task} />
-              )
-            })
-            }
+            {tasks.map(task => {
+              return <Task key={task._id} props={task} />;
+            })}
           </ul>
         </div>
       )}

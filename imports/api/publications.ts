@@ -7,5 +7,9 @@ Meteor.publish("tasks", function publishTasks() {
 });
 
 Meteor.publish("lists", function publishLists() {
-  return ListsCollection.find({})
+  return ListsCollection.find({});
+});
+
+Meteor.publish("users", function publishUsers() {
+  return Meteor.users.find({});
 });

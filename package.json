@@ -12,6 +12,7 @@
     "@types/react-router-dom": "^5.3.3",
     "antd": "^4.24.0",
     "bcrypt": "^5.1.0",
+    "lodash.debounce": "^4.0.8",
     "meteor-node-stubs": "^1.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -25,6 +26,7 @@
     "testModule": "tests/main.ts"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.7",
     "@types/meteor": "^2.9.2",
     "@types/mocha": "^10.0.1",
     "@types/react": "^18.2.6",
