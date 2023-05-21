@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
 import { Button, Form, Input } from "antd";
 
+export const onFinishFailed = (errorInfo: any) => {
+  console.log("Failed:", errorInfo);
+};
+
 interface ILoginFormProps {
   email: string;
   password: string;
@@ -12,8 +16,6 @@ interface ILoginFormProps {
 const Login = () => {
   const navigate = useNavigate();
   const userContext = useUserContext();
-
-  const goToSignup = () => navigate("/signup");
 
   const handleSubmit = (e: ILoginFormProps) => {
     const { email, password } = e;
@@ -34,12 +36,8 @@ const Login = () => {
     });
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
-  };
-
   return (
-    <div style={{ width: "100%" }}>
+    <div id="login-form">
       <Form
         name="basic"
         labelCol={{ span: 8 }}
@@ -50,6 +48,7 @@ const Login = () => {
         autoComplete="off"
       >
         <Form.Item
+          wrapperCol={{ span: 8, offset: 0 }}
           label="Email"
           name="email"
           rules={[
@@ -62,25 +61,9 @@ const Login = () => {
         >
           <Input size="large" />
         </Form.Item>
-        {/* <Form.Item
-        label="Username"
-        name="username"
-        rules={[
-          { required: true, message: "Please input your username!" },
-          {
-            min: 6,
-            message: "Username must be at least 6 characters long!",
-          },
-          {
-            max: 20,
-            message: "Username cannot exceed 20 characters!",
-          },
-        ]}
-      >
-        <Input size="large" />
-      </Form.Item> */}
 
         <Form.Item
+          wrapperCol={{ span: 8, offset: 0 }}
           label="Password"
           name="password"
           rules={[
@@ -99,9 +82,11 @@ const Login = () => {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Login
-          </Button>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Button type="primary" htmlType="submit">
+              login
+            </Button>
+          </div>
         </Form.Item>
       </Form>
     </div>
