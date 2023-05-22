@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Meteor } from "meteor/meteor";
 import { Button, Form, Input, Checkbox, Tag, Tooltip } from "antd";
-import { onFinishFailed } from "./Login";
+import { onFinishFailed } from "../pages/Login";
 import InviteEditors from "./InviteEditors";
 import type { InputRef } from "antd";
 import { PlusOutlined } from "@ant-design/icons";

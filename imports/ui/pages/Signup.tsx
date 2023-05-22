@@ -2,8 +2,8 @@ import React from "react";
 import { Meteor } from "meteor/meteor";
 import { useNavigate } from "react-router-dom";
 import { Button, Form, Input } from "antd";
-import { onFinishFailed } from "./Login";
-import { useUserContext } from "../../context/UserContext";
+import { onFinishFailed } from "../pages/Login";
+import { useUserContext } from "../../../context/UserContext";
 
 interface ISignupFormProps {
   email: string;

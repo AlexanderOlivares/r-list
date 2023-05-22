@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Meteor } from "meteor/meteor";
-import Signup from "./Signup";
-import Login from "./Login";
-import Profile from "./Profile";
-import TaskForm from "./TaskForm";
-import NotFound from "./NotFound";
-import Nav from "./Nav";
+import Signup from "./pages/Signup";
+import Profile from "./pages/Profile";
+import TaskForm from "./pages/TaskForm";
+import NotFound from "./components/NotFound";
+import Nav from "./components/Nav";
+import Login from "./pages/Login";
 import { useUserContext } from "../../context/UserContext";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "antd";
-import Spin from "./Spin";
+import Spin from "./components/Spin";
 const { Content } = Layout;
 import "antd/dist/antd.css";
 

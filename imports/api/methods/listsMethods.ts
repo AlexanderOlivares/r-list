@@ -1,7 +1,7 @@
 import { check, Match } from "meteor/check";
 import { Meteor } from "meteor/meteor";
 import { ListsCollection } from "../collections/ListsCollection";
-import { INewList } from "/imports/ui/NewList";
+import { INewList } from "/imports/ui/components/NewList";
 
 Meteor.methods({
   "lists.insert"(newList: INewList) {

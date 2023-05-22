@@ -1,11 +1,12 @@
 import React from "react";
-import { useUserContext } from "../../context/UserContext";
+import { useUserContext } from "../../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { Meteor } from "meteor/meteor";
-import NewList from "./NewList";
+import NewList from "../components/NewList";
 import { useTracker } from "meteor/react-meteor-data";
-import { ListsCollection } from "../api/collections/ListsCollection";
+import { ListsCollection } from "../../api/collections/ListsCollection";
 import { Typography } from "antd";
+import ListPreview from "../components/ListPreview";
 const { Title } = Typography;
 
 function Profile() {
@@ -80,16 +81,17 @@ function Profile() {
       {loading ? (
         <h1>loading lists...</h1>
       ) : (
-        lists
-          .filter(list => list.ownerId !== userId)
-          .map(list => {
-            return (
-              <div key={list._id}>
-                <p>{list.listName}</p>
-                <button onClick={() => goToList(list._id)}>Go to list</button>
-              </div>
-            );
-          })
+        // lists
+        //   .filter(list => list.ownerId !== userId)
+        //   .map(list => {
+        //     return (
+        //       <div key={list._id}>
+        //         <p>{list.listName}</p>
+        //         <button onClick={() => goToList(list._id)}>Go to list</button>
+        //       </div>
+        //     );
+        //   })
+        <ListPreview />
       )}
     </>
   );

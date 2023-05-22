@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { TasksCollection } from "../api/collections/TasksCollection";
+import { TasksCollection } from "../../api/collections/TasksCollection";
 import { useTracker } from "meteor/react-meteor-data";
-import { useUserContext } from "../../context/UserContext";
+import { useUserContext } from "../../../context/UserContext";
 import { Meteor } from "meteor/meteor";
-import { Task } from "./Task";
+import { Task } from "../components/Task";
 import { useParams } from "react-router-dom";
-import { ListsCollection } from "../api/collections/ListsCollection";
-import { IEditor } from "./NewList";
+import { ListsCollection } from "../../api/collections/ListsCollection";
+import { IEditor } from "../components/NewList";
 
 const TaskForm = () => {
   const userContext = useUserContext();
