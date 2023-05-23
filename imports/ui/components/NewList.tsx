@@ -6,6 +6,7 @@ import { onFinishFailed } from "../pages/Login";
 import InviteEditors from "./InviteEditors";
 import type { InputRef } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import Title from "antd/lib/typography/Title";
 
 export interface IEditor {
   email?: string;
@@ -154,22 +155,32 @@ export default function NewList() {
       autoComplete="off"
     >
       <Form.Item
+        style={{ maxWidth: "80%", margin: "auto", paddingBottom: "20px" }}
         wrapperCol={{ span: 12, offset: 0 }}
         label="List name"
         name="listName"
         rules={[{ required: true, message: "Please name your list" }]}
       >
-        <Input size="large" />
+        <Input size="middle" />
       </Form.Item>
 
-      <Form.Item wrapperCol={{ span: 12, offset: 0 }} label="by email" name="editors">
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Title level={4}>Invite Friends to Edit</Title>
+      </div>
+
+      <Form.Item
+        style={{ display: "flex", justifyContent: "center" }}
+        wrapperCol={{ span: 12, offset: 0 }}
+        // label="by username"
+        name="editors"
+      >
         {tags.map((tag, index) => {
           if (editInputIndex === index) {
             return (
               <Input
                 ref={editInputRef}
                 key={tag}
-                size="small"
+                size="large"
                 className="tag-input"
                 value={editInputValue}
                 onChange={handleEditInputChange}
@@ -213,7 +224,7 @@ export default function NewList() {
           <Input
             ref={inputRef}
             type="email"
-            size="small"
+            size="middle"
             className="tag-input"
             value={inputValue}
             onChange={handleInputChange}
@@ -253,28 +264,27 @@ export default function NewList() {
         })}
       </div>
 
-      <Form.Item wrapperCol={{ span: 12, offset: 0 }} label="by username" name="editors">
+      <Form.Item
+        style={{ maxWidth: "80%", margin: "auto", paddingBottom: "20px" }}
+        wrapperCol={{ span: 12, offset: 0 }}
+        label="Search for friends"
+        name="editors"
+      >
         <InviteEditors setEditorUsernameTags={setEditorsUsernames} />
-        <div style={{ marginTop: "10px", display: "flex", justifyContent: "center" }}>
-          <Button type="ghost">add editor</Button>
-        </div>
       </Form.Item>
 
       <Form.Item
+        style={{ display: "flex", justifyContent: "center" }}
         name="editorsCanInvite"
         valuePropName="checked"
-        wrapperCol={{ offset: 0, span: 16 }}
-        style={{ marginTop: "20px" }}
       >
         <Checkbox>Editors can invite others</Checkbox>
       </Form.Item>
 
-      <Form.Item>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <Button type="primary" htmlType="submit">
-            create list
-          </Button>
-        </div>
+      <Form.Item style={{ display: "flex", justifyContent: "center" }}>
+        <Button type="primary" htmlType="submit">
+          create list
+        </Button>
       </Form.Item>
     </Form>
   );

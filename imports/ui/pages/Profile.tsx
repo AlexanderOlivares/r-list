@@ -12,10 +12,10 @@ function Profile() {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
           <Title level={1}>{username}</Title>
         </div>
-        <div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
           <Title level={4}>New List</Title>
         </div>
         <div>

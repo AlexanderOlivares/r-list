@@ -51,11 +51,11 @@ const InviteEditors: React.FC<IInviteEditorsProps> = ({ setEditorUsernameTags })
 
   return (
     <Mentions
-      style={{ width: "100%" }}
       loading={loading}
       onSearch={onSearch}
       onChange={handleChange}
       value={inputValue}
+      placeholder="use @ followed by username"
       onSelect={option => option.key && handleSelect(option.key)}
       options={users.map(({ username }) => ({
         key: username,
