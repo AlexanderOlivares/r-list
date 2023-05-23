@@ -1,97 +1,89 @@
-import { Avatar, Button, List, Skeleton } from "antd";
-import React, { useEffect, useState } from "react";
+import { List, Skeleton } from "antd";
+import React from "react";
+import { useUserContext } from "../../../context/UserContext";
+import { useNavigate } from "react-router-dom";
+import { Meteor } from "meteor/meteor";
+import { useTracker } from "meteor/react-meteor-data";
+import { IList, ListsCollection } from "../../api/collections/ListsCollection";
+import Title from "antd/lib/typography/Title";
 
-interface DataType {
-  gender?: string;
-  name: {
-    title?: string;
-    first?: string;
-    last?: string;
-  };
-  email?: string;
-  picture: {
-    large?: string;
-    medium?: string;
-    thumbnail?: string;
-  };
-  nat?: string;
-  loading: boolean;
+interface IListPreviewProps {
+  userOwnsList: boolean;
 }
 
-const count = 3;
-const fakeDataUrl = `https://randomuser.me/api/?results=${count}&inc=name,gender,email,nat,picture&noinfo`;
+const App: React.FC<IListPreviewProps> = ({ userOwnsList }) => {
+  const navigate = useNavigate();
+  const userContext = useUserContext();
+  const { username, _id: userId, emails } = userContext.state ?? {};
 
-const App: React.FC = () => {
-  const [initLoading, setInitLoading] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<DataType[]>([]);
-  const [list, setList] = useState<DataType[]>([]);
+  const { lists, loading } = useTracker(() => {
+    const handler = Meteor.subscribe("lists");
 
-  useEffect(() => {
-    fetch(fakeDataUrl)
-      .then(res => res.json())
-      .then(res => {
-        setInitLoading(false);
-        setData(res.results);
-        setList(res.results);
-      });
-  }, []);
+    const noDataAvailable = { lists: [], loading: false };
 
-  const onLoadMore = () => {
-    setLoading(true);
-    setList(
-      data.concat([...new Array(count)].map(() => ({ loading: true, name: {}, picture: {} })))
-    );
-    fetch(fakeDataUrl)
-      .then(res => res.json())
-      .then(res => {
-        const newData = data.concat(res.results);
-        setData(newData);
-        setList(newData);
-        setLoading(false);
-        // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
-        // In real scene, you can using public method of react-virtualized:
-        // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
-        window.dispatchEvent(new Event("resize"));
-      });
+    if (!handler.ready()) {
+      return { ...noDataAvailable, isLoading: true };
+    }
+
+    const userEmail = emails?.length && emails[0].address;
+
+    const foundLists = ListsCollection.find(
+      {
+        $or: [
+          { ownerId: userId },
+          { "editors.email": userEmail },
+          { "editors.editorUsername": username },
+        ],
+      },
+      {
+        sort: { createdAt: -1 },
+      }
+    ).fetch();
+
+    return { loading: false, lists: foundLists };
+  });
+
+  const goToList = (listId: string) => {
+    navigate(`/lists/${listId}`);
+    return;
   };
 
-  const loadMore =
-    !initLoading && !loading ? (
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: 12,
-          height: 32,
-          lineHeight: "32px",
-        }}
-      >
-        <Button onClick={onLoadMore}>loading more</Button>
-      </div>
-    ) : null;
+  const showUserListsOnly = (userOwnsList: boolean) => {
+    return lists.filter(list => (userOwnsList ? list.ownerId === userId : list.ownerId !== userId));
+  };
 
   return (
-    <List
-      className="demo-loadmore-list"
-      loading={initLoading}
-      itemLayout="horizontal"
-      loadMore={loadMore}
-      dataSource={list}
-      renderItem={item => (
-        <List.Item
-          actions={[<a key="list-loadmore-edit">edit</a>, <a key="list-loadmore-more">more</a>]}
-        >
-          <Skeleton avatar title={false} loading={item.loading} active>
-            <List.Item.Meta
-              avatar={<Avatar src={item.picture.large} />}
-              title={<a href="https://ant.design">{item.name?.last}</a>}
-              description="Ant Design, a design language for background applications, is refined by Ant UED Team"
-            />
-            <div>content</div>
-          </Skeleton>
-        </List.Item>
-      )}
-    />
+    <div style={{ maxWidth: "50%", margin: "auto" }}>
+      <List
+        className="list-preview"
+        loading={loading}
+        itemLayout="horizontal"
+        dataSource={showUserListsOnly(userOwnsList)}
+        renderItem={({ listName, _id: listId }: IList) => (
+          <List.Item
+            style={{ paddingRight: "10px" }}
+            actions={[
+              <a key="list-loadmore-edit" onClick={() => goToList(listId)}>
+                view
+              </a>,
+            ]}
+          >
+            <Skeleton title={false} loading={loading} active>
+              <List.Item.Meta
+                style={{ paddingLeft: "10px" }}
+                title={
+                  <a href={`/lists/${listId}`}>
+                    <Title key={listId} level={5}>
+                      {listName}
+                    </Title>
+                  </a>
+                }
+              />
+            </Skeleton>
+          </List.Item>
+        )}
+      />
+    </div>
   );
 };
 
