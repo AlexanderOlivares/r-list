@@ -7,6 +7,7 @@ import { Task } from "../components/Task";
 import { useParams } from "react-router-dom";
 import { ListsCollection } from "../../api/collections/ListsCollection";
 import { IEditor } from "../components/NewList";
+import Title from "antd/lib/typography/Title";
 
 const TaskForm = () => {
   const userContext = useUserContext();
@@ -87,10 +88,10 @@ const TaskForm = () => {
   return (
     <>
       <div>
-        <h1>{list?.listName}</h1>
+        <Title level={1}>{list?.listName}</Title>
       </div>
       <div>
-        <h4>Editors</h4>
+        <Title level={4}>{"Editors"}</Title>
         {list?.editors.map((editor: IEditor, i: number) => (
           <p key={`${editor.email}-${i}`}>
             {editor.editorUsername ? editor.editorUsername : editor.email}
@@ -99,7 +100,7 @@ const TaskForm = () => {
       </div>
       {isListOwner && (
         <div style={{ marginBottom: "10px" }}>
-          <h4>Ban Users</h4>
+          <Title level={4}>{"Ban Users"}</Title>
           {list?.editors.map((editor: IEditor, i: number) => (
             <button onClick={banUser} key={`${editor.email}+${i}`}>
               {editor.editorUsername ? editor.editorUsername : editor.email}

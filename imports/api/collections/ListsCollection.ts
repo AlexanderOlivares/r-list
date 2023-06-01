@@ -1,4 +1,5 @@
 import { Mongo } from "meteor/mongo";
+import { IEditor } from "/imports/ui/components/NewList";
 
 export interface IList {
   _id: string;
@@ -6,7 +7,7 @@ export interface IList {
   ownerId: string;
   bannedEditors: string[];
   createdAt: Date;
-  editors: string[];
+  editors: IEditor[];
   editorsCanInvite: boolean;
 }
 
