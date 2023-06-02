@@ -7,6 +7,7 @@ export interface ITask {
   createdAt: Date;
   lastEditedAt: Date;
   userId: string;
+  username: string;
 }
 
 export const TasksCollection = new Mongo.Collection<ITask>("tasks");

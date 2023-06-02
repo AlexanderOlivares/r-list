@@ -11,7 +11,7 @@ import Title from "antd/lib/typography/Title";
 
 const TaskForm = () => {
   const userContext = useUserContext();
-  const { _id: userId } = userContext.state ?? {};
+  const { _id: userId, username } = userContext.state ?? {};
   const [text, setText] = useState("");
   const { listId } = useParams();
 
@@ -56,6 +56,7 @@ const TaskForm = () => {
       text,
       listId,
       userId,
+      username,
       lastEditedBy: userId,
       lastEditedAt: new Date(),
     };

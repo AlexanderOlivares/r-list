@@ -4,12 +4,13 @@ import { TasksCollection } from "../collections/TasksCollection";
 
 Meteor.methods({
   "tasks.insert"(task) {
-    const { text, listId, userId, lastEditedAt, lastEditedBy} = task;
+    const { text, listId, userId, lastEditedAt, lastEditedBy, username } = task;
     check(text, String);
     check(listId, String);
     check(userId, String);
     check(lastEditedAt, Date);
     check(lastEditedBy, String);
+    check(username, String);
 
     if (!this.userId || userId !== userId) {
       throw new Meteor.Error("Not authorized.");
@@ -18,10 +19,11 @@ Meteor.methods({
     const taskId = TasksCollection.insert({
       text,
       listId,
-      lastEditedBy, 
+      lastEditedBy,
       lastEditedAt,
-      createdAt: new Date,
+      createdAt: new Date(),
       userId: this.userId,
+      username,
     });
 
     return taskId;
