@@ -6,6 +6,7 @@ import { Button, Form, Input } from "antd";
 import { ValidateErrorEntity } from "rc-field-form/es/interface";
 
 export const onFinishFailed = (errorInfo: ValidateErrorEntity) => {
+  // TODO display error toast
   console.log("Failed:", errorInfo);
 };
 

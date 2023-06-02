@@ -1,18 +1,21 @@
-import React, { useState } from "react";
-import { TasksCollection } from "../../api/collections/TasksCollection";
+import React from "react";
+import { ITask, TasksCollection } from "../../api/collections/TasksCollection";
 import { useTracker } from "meteor/react-meteor-data";
 import { useUserContext } from "../../../context/UserContext";
 import { Meteor } from "meteor/meteor";
 import { Task } from "../components/Task";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ListsCollection } from "../../api/collections/ListsCollection";
 import { IEditor } from "../components/NewList";
 import Title from "antd/lib/typography/Title";
+import { Button, Form, Input } from "antd";
+import { onFinishFailed } from "./Login";
 
 const TaskForm = () => {
+  const navigate = useNavigate();
   const userContext = useUserContext();
   const { _id: userId, username } = userContext.state ?? {};
-  const [text, setText] = useState("");
+  const [form] = Form.useForm();
   const { listId } = useParams();
 
   const { list, tasks, isListOwner } = useTracker(() => {
@@ -48,11 +51,14 @@ const TaskForm = () => {
     return { list, isLoading: false, tasks, isListOwner };
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = ({ text }: { text: string }) => {
     if (!text) return;
 
-    const task = {
+    if (!userId || !username || !listId) {
+      return navigate("/");
+    }
+
+    const task: Partial<ITask> = {
       text,
       listId,
       userId,
@@ -66,7 +72,7 @@ const TaskForm = () => {
         console.log(error.reason);
       } else {
         console.log("task insert result ", result);
-        setText("");
+        form.resetFields();
       }
     });
   };
@@ -88,7 +94,7 @@ const TaskForm = () => {
 
   return (
     <>
-      <div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={1}>{list?.listName}</Title>
       </div>
       <div>
@@ -109,16 +115,38 @@ const TaskForm = () => {
           ))}
         </div>
       )}
-      <form className="task-form" onSubmit={handleSubmit}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          type="text"
-          placeholder="Type to add new tasks"
-        />
+      <Form
+        form={form}
+        name="basic"
+        style={{
+          maxWidth: 600,
+          margin: "auto",
+        }}
+        initialValues={{ remember: true }}
+        onFinish={handleSubmit}
+        onFinishFailed={onFinishFailed}
+        autoComplete="off"
+      >
+        <Form.Item
+          label="text"
+          name="text"
+          rules={[
+            { required: true, message: "List item cannot be empty" },
+            {
+              max: 200,
+              message: "Input cannot exceed 200 characters",
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
 
-        <button type="submit">Add Task</button>
-      </form>
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          <Button type="primary" htmlType="submit">
+            add to list
+          </Button>
+        </Form.Item>
+      </Form>
       {tasks.length > 0 && (
         <div>
           <ul>

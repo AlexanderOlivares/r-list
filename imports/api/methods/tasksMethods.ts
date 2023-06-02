@@ -1,9 +1,9 @@
 import { check } from "meteor/check";
 import { Meteor } from "meteor/meteor";
-import { TasksCollection } from "../collections/TasksCollection";
+import { ITask, TasksCollection } from "../collections/TasksCollection";
 
 Meteor.methods({
-  "tasks.insert"(task) {
+  "tasks.insert"(task: Partial<ITask>) {
     const { text, listId, userId, lastEditedAt, lastEditedBy, username } = task;
     check(text, String);
     check(listId, String);
