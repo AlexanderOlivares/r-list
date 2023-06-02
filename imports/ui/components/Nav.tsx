@@ -45,7 +45,7 @@ export default function Nav() {
           type: "logout",
           payload: null,
         });
-        navigate(`/`);
+        navigate("/");
       }
     });
   };

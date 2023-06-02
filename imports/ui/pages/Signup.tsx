@@ -23,7 +23,7 @@ const Signup = () => {
         console.log(error.reason);
         throw new Meteor.Error("create-user-error", "Error reating user");
       } else {
-        if (!res) return navigate(`/`);
+        if (!res) return navigate("/");
         const { username } = res;
         console.log(`User added with ID ${res._id}`);
         userContext.dispatch({

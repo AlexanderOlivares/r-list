@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useReducer } from "react";
 import type { ReactNode } from "react";
-import { Meteor } from 'meteor/meteor';
+import { Meteor } from "meteor/meteor";
 
-const defualtState = null;
+const defualtState: IUserContext = {
+  state: null,
+  dispatch: () => {
+    return {
+      type: "no-op",
+      payload: null,
+    };
+  },
+};
 
 export type AuthAction = {
   type: string;
@@ -18,16 +26,18 @@ interface IUserContext {
 
 const UserContext = createContext<IUserContext | undefined>(undefined);
 
-function userContextReducer(state: IUserContext, action: AuthAction): any {
+function userContextReducer(state: IUserContext, action: AuthAction): IUserContext {
   const { type, payload } = action;
   switch (type) {
     case "login":
       return {
-        ...payload
+        ...state,
+        state: payload,
       };
     case "logout":
       return {
-        payload: null,
+        ...state,
+        state: null,
       };
     default:
       return state;
@@ -36,7 +46,11 @@ function userContextReducer(state: IUserContext, action: AuthAction): any {
 
 export function UserContextProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(userContextReducer, defualtState);
-  return <UserContext.Provider value={{ state, dispatch }}>{children}</UserContext.Provider>;
+  const userContextValue: IUserContext = {
+    state: state.state,
+    dispatch,
+  };
+  return <UserContext.Provider value={userContextValue}>{children}</UserContext.Provider>;
 }
 
 export function useUserContext() {

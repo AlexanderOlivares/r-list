@@ -111,7 +111,7 @@ const TaskForm = () => {
       <form className="task-form" onSubmit={handleSubmit}>
         <input
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
           type="text"
           placeholder="Type to add new tasks"
         />
@@ -121,8 +121,8 @@ const TaskForm = () => {
       {tasks.length > 0 && (
         <div>
           <ul>
-            {tasks.map(task => {
-              return <Task key={task._id} props={task} />;
+            {tasks.map((task) => {
+              return <Task key={task._id} task={task} />;
             })}
           </ul>
         </div>

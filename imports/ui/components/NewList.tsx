@@ -32,7 +32,7 @@ export default function NewList() {
   const inputRef = useRef<InputRef>(null);
   const editInputRef = useRef<InputRef>(null);
 
-  const EMAIL_VALIDATOR = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  const EMAIL_VALIDATOR = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
   const makeNewList = (e: INewList) => {
     const { listName, editorsCanInvite } = e;

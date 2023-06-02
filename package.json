@@ -5,13 +5,16 @@
     "start": "meteor run",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-    "visualize": "meteor --production --extra-packages bundle-visualizer"
+    "visualize": "meteor --production --extra-packages bundle-visualizer",
+    "lint": "eslint .",
+    "fix-lint": "eslint --fix ."
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
     "@types/react-router-dom": "^5.3.3",
     "antd": "^4.24.0",
     "bcrypt": "^5.1.0",
+    "eslint-config-prettier": "^8.8.0",
     "lodash.debounce": "^4.0.8",
     "meteor-node-stubs": "^1.2.5",
     "react": "^18.2.0",
@@ -31,6 +34,10 @@
     "@types/mocha": "^10.0.1",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "eslint": "^8.41.0",
+    "eslint-plugin-react": "^7.32.2",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   }
