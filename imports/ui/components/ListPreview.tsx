@@ -49,7 +49,9 @@ const App: React.FC<IListPreviewProps> = ({ userOwnsList }) => {
   };
 
   const showUserListsOnly = (userOwnsList: boolean) => {
-    return lists.filter(list => (userOwnsList ? list.ownerId === userId : list.ownerId !== userId));
+    return lists.filter((list) =>
+      userOwnsList ? list.ownerId === userId : list.ownerId !== userId
+    );
   };
 
   return (
@@ -63,7 +65,7 @@ const App: React.FC<IListPreviewProps> = ({ userOwnsList }) => {
           <List.Item
             style={{ paddingRight: "10px" }}
             actions={[
-              <a key="list-loadmore-edit" onClick={() => goToList(listId)}>
+              <a key="list-view" onClick={() => goToList(listId)}>
                 view
               </a>,
             ]}

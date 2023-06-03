@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { ITask, TasksCollection } from "../../api/collections/TasksCollection";
 import { useTracker } from "meteor/react-meteor-data";
 import { useUserContext } from "../../../context/UserContext";
 import { Meteor } from "meteor/meteor";
-import { Task } from "../components/Task";
 import { useNavigate, useParams } from "react-router-dom";
 import { ListsCollection } from "../../api/collections/ListsCollection";
 import { IEditor } from "../components/NewList";
 import Title from "antd/lib/typography/Title";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, List, Skeleton, Typography } from "antd";
 import { onFinishFailed } from "./Login";
+import DeleteTask from "../components/DeleteTask";
+const { Text } = Typography;
 
 const TaskForm = () => {
   const navigate = useNavigate();
@@ -17,9 +18,17 @@ const TaskForm = () => {
   const { _id: userId, username } = userContext.state ?? {};
   const [form] = Form.useForm();
   const { listId } = useParams();
+  const [showDeleteTaskConfirm, setShowDeleteTaskConfirm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string>("");
 
   const { list, tasks, isListOwner } = useTracker(() => {
-    const noDataAvailable = { list: undefined, tasks: [], isListOwner: false, isLoading: false };
+    const taskArray: ITask[] = [];
+    const noDataAvailable = {
+      list: undefined,
+      tasks: taskArray,
+      isListOwner: false,
+      isLoading: false,
+    };
 
     if (!userId) return noDataAvailable;
 
@@ -63,7 +72,7 @@ const TaskForm = () => {
       listId,
       userId,
       username,
-      lastEditedBy: userId,
+      lastEditedBy: username,
       lastEditedAt: new Date(),
     };
 
@@ -92,6 +101,25 @@ const TaskForm = () => {
     });
   };
 
+  const deleteTask = (taskId: string) => {
+    setShowDeleteTaskConfirm(true);
+    setTaskToDelete(taskId);
+  };
+
+  const formatMetadata = (task: ITask) => {
+    const { username, lastEditedAt, createdAt, lastEditedBy } = task;
+    return (
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {createdAt.toLocaleDateString() === lastEditedAt.toLocaleDateString() ? (
+          <Text type="secondary">{`created by: ${username}`}</Text>
+        ) : (
+          <Text type="secondary">{`edited by: ${lastEditedBy}`}</Text>
+        )}
+        <Text type="secondary">{`last edit: ${lastEditedAt.toLocaleString()}`}</Text>
+      </div>
+    );
+  };
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "center" }}>
@@ -115,47 +143,75 @@ const TaskForm = () => {
           ))}
         </div>
       )}
-      <Form
-        form={form}
-        name="basic"
-        style={{
-          maxWidth: 600,
-          margin: "auto",
-        }}
-        initialValues={{ remember: true }}
-        onFinish={handleSubmit}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-      >
-        <Form.Item
-          label="text"
-          name="text"
-          rules={[
-            { required: true, message: "List item cannot be empty" },
-            {
-              max: 200,
-              message: "Input cannot exceed 200 characters",
-            },
-          ]}
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Form
+          form={form}
+          name="basic"
+          style={{
+            maxWidth: 600,
+            margin: "auto",
+          }}
+          initialValues={{ remember: true }}
+          onFinish={handleSubmit}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
         >
-          <Input />
-        </Form.Item>
+          <Form.Item
+            label="text"
+            name="text"
+            rules={[
+              { required: true, message: "List item cannot be empty" },
+              {
+                max: 200,
+                message: "Input cannot exceed 200 characters",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
 
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
-            add to list
-          </Button>
-        </Form.Item>
-      </Form>
-      {tasks.length > 0 && (
-        <div>
-          <ul>
-            {tasks.map((task) => {
-              return <Task key={task._id} task={task} />;
-            })}
-          </ul>
-        </div>
-      )}
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                add to list
+              </Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </div>
+      <div style={{ margin: "5px" }}>
+        <List
+          className="demo-loadmore-list"
+          loading={false}
+          itemLayout="horizontal"
+          dataSource={tasks}
+          size="large"
+          renderItem={(task) => (
+            <List.Item
+              actions={[
+                <a key="task-list-edit">edit</a>,
+                <a key="task-list-delete" onClick={() => deleteTask(task._id)}>
+                  delete
+                </a>,
+              ]}
+            >
+              <Skeleton avatar title={false} loading={false} active>
+                <List.Item.Meta
+                  title={<a href="https://ant.design">{task.text}</a>}
+                  description={formatMetadata(task)}
+                />
+                {taskToDelete == task._id && showDeleteTaskConfirm && (
+                  <DeleteTask
+                    taskId={taskToDelete}
+                    showDeleteTaskConfirm={showDeleteTaskConfirm}
+                    setShowDeleteTaskConfirm={setShowDeleteTaskConfirm}
+                  />
+                )}
+              </Skeleton>
+            </List.Item>
+          )}
+        />
+      </div>
     </>
   );
 };
