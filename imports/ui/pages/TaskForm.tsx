@@ -7,7 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ListsCollection } from "../../api/collections/ListsCollection";
 import { IEditor } from "../components/NewList";
 import Title from "antd/lib/typography/Title";
-import { Button, Form, Input, List, Skeleton, Typography } from "antd";
+import { Avatar, Tooltip, Button, Form, Input, List, Skeleton, Typography } from "antd";
 import { onFinishFailed } from "./Login";
 import DeleteTask from "../components/DeleteTask";
 import EditTaskModal from "../components/EditTaskModal";
@@ -121,11 +121,11 @@ const TaskForm = () => {
     return (
       <div style={{ display: "flex", flexDirection: "column" }}>
         {createdAtReadable === lastEditedAtReadable ? (
-          <Text type="secondary">{`created by: ${username}`}</Text>
+          <Text type="secondary">{`created by ${username}`}</Text>
         ) : (
-          <Text type="secondary">{`edited by: ${lastEditedBy}`}</Text>
+          <Text type="secondary">{`edited by ${lastEditedBy}`}</Text>
         )}
-        <Text type="secondary">{`last edit: ${lastEditedAtReadable}`}</Text>
+        <Text type="secondary">{`at ${lastEditedAtReadable}`}</Text>
       </div>
     );
   };
@@ -135,13 +135,29 @@ const TaskForm = () => {
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={1}>{list?.listName}</Title>
       </div>
-      <div>
+      <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={4}>{"Editors"}</Title>
-        {list?.editors.map((editor: IEditor, i: number) => (
-          <p key={`${editor.email}-${i}`}>
-            {editor.editorUsername ? editor.editorUsername : editor.email}
-          </p>
-        ))}
+      </div>
+      <div style={{ marginBottom: "10px", display: "flex", justifyContent: "center" }}>
+        {list && (
+          <Avatar.Group
+            maxCount={4}
+            maxPopoverTrigger="click"
+            size="large"
+            maxStyle={{ color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" }}
+          >
+            {list?.editors.map((editor: IEditor) => {
+              const emailOrUsername = editor.editorUsername ?? editor.email;
+              const initial = emailOrUsername?.[0];
+              return (
+                <Tooltip key={emailOrUsername} title={emailOrUsername} placement="top">
+                  <Avatar style={{ backgroundColor: "#f56a00" }}>{initial?.toUpperCase()}</Avatar>
+                </Tooltip>
+              );
+            })}
+            {/* <Avatar style={{ backgroundColor: "#1677ff" }} icon={<AntDesignOutlined />} /> */}
+          </Avatar.Group>
+        )}
       </div>
       {isListOwner && (
         <div style={{ marginBottom: "10px" }}>
