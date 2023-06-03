@@ -41,4 +41,46 @@ Meteor.methods({
 
     return "Task deleted";
   },
+  "tasks.edit"(task: ITask) {
+    const { _id, text, listId, userId, lastEditedAt, createdAt, lastEditedBy, username } = task;
+    check(_id, String);
+    check(text, String);
+    check(listId, String);
+    check(userId, String);
+    check(lastEditedAt, Date);
+    check(createdAt, Date);
+    check(lastEditedBy, String);
+    check(username, String);
+
+    const taskFound = TasksCollection.findOne({ _id });
+
+    if (!taskFound) {
+      throw new Meteor.Error("Error task not found");
+    }
+
+    const user = Meteor.user();
+
+    if (!user) {
+      throw new Meteor.Error("User not found");
+    }
+
+    const updatedTask = TasksCollection.update(
+      {
+        _id: taskFound._id,
+      },
+      {
+        $set: {
+          text,
+          lastEditedBy: user.username,
+          lastEditedAt: new Date(),
+        },
+      }
+    );
+
+    if (!updatedTask) {
+      throw new Meteor.Error("Error updating task");
+    }
+
+    return "Task updated";
+  },
 });

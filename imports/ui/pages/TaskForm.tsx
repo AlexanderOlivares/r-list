@@ -10,6 +10,7 @@ import Title from "antd/lib/typography/Title";
 import { Button, Form, Input, List, Skeleton, Typography } from "antd";
 import { onFinishFailed } from "./Login";
 import DeleteTask from "../components/DeleteTask";
+import EditTaskModal from "../components/EditTaskModal";
 const { Text } = Typography;
 
 const TaskForm = () => {
@@ -20,6 +21,8 @@ const TaskForm = () => {
   const { listId } = useParams();
   const [showDeleteTaskConfirm, setShowDeleteTaskConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string>("");
+  const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<string>("");
 
   const { list, tasks, isListOwner } = useTracker(() => {
     const taskArray: ITask[] = [];
@@ -106,16 +109,23 @@ const TaskForm = () => {
     setTaskToDelete(taskId);
   };
 
+  const editTask = (taskId: string) => {
+    setShowEditTaskModal(true);
+    setTaskToEdit(taskId);
+  };
+
   const formatMetadata = (task: ITask) => {
     const { username, lastEditedAt, createdAt, lastEditedBy } = task;
+    const createdAtReadable = createdAt.toLocaleString();
+    const lastEditedAtReadable = lastEditedAt.toLocaleString();
     return (
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {createdAt.toLocaleDateString() === lastEditedAt.toLocaleDateString() ? (
+        {createdAtReadable === lastEditedAtReadable ? (
           <Text type="secondary">{`created by: ${username}`}</Text>
         ) : (
           <Text type="secondary">{`edited by: ${lastEditedBy}`}</Text>
         )}
-        <Text type="secondary">{`last edit: ${lastEditedAt.toLocaleString()}`}</Text>
+        <Text type="secondary">{`last edit: ${lastEditedAtReadable}`}</Text>
       </div>
     );
   };
@@ -189,7 +199,9 @@ const TaskForm = () => {
           renderItem={(task) => (
             <List.Item
               actions={[
-                <a key="task-list-edit">edit</a>,
+                <a key="task-list-edit" onClick={() => editTask(task._id)}>
+                  edit
+                </a>,
                 <a key="task-list-delete" onClick={() => deleteTask(task._id)}>
                   delete
                 </a>,
@@ -205,6 +217,13 @@ const TaskForm = () => {
                     taskId={taskToDelete}
                     showDeleteTaskConfirm={showDeleteTaskConfirm}
                     setShowDeleteTaskConfirm={setShowDeleteTaskConfirm}
+                  />
+                )}
+                {taskToEdit == task._id && showEditTaskModal && (
+                  <EditTaskModal
+                    task={task}
+                    showEditTaskModal={showEditTaskModal}
+                    setShowEditTaskModal={setShowEditTaskModal}
                   />
                 )}
               </Skeleton>
