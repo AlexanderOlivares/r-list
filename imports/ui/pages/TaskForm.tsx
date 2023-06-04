@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ITask, TasksCollection } from "../../api/collections/TasksCollection";
 import { useTracker } from "meteor/react-meteor-data";
 import { useUserContext } from "../../../context/UserContext";
@@ -7,10 +7,24 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ListsCollection } from "../../api/collections/ListsCollection";
 import { IEditor } from "../components/NewList";
 import Title from "antd/lib/typography/Title";
-import { Avatar, Tooltip, Button, Form, Input, List, Skeleton, Typography } from "antd";
+import {
+  Avatar,
+  Tooltip,
+  Button,
+  Form,
+  Input,
+  List,
+  Skeleton,
+  Typography,
+  Modal,
+  message,
+  Select,
+} from "antd";
 import { onFinishFailed } from "./Login";
 import DeleteTask from "../components/DeleteTask";
 import EditTaskModal from "../components/EditTaskModal";
+import { avatarHexColors } from "../constants/avatarHexColors";
+import { SettingOutlined } from "@ant-design/icons";
 const { Text } = Typography;
 
 const TaskForm = () => {
@@ -23,6 +37,10 @@ const TaskForm = () => {
   const [taskToDelete, setTaskToDelete] = useState<string>("");
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<string>("");
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [renameList, setRenameList] = useState("");
+  const [editorsEmailOrUsername, setEditorsEmailOrUsername] = useState<string[]>([]);
+  const [usersToBan, setUsersToBan] = useState<string[]>([]);
 
   const { list, tasks, isListOwner } = useTracker(() => {
     const taskArray: ITask[] = [];
@@ -33,7 +51,7 @@ const TaskForm = () => {
       isLoading: false,
     };
 
-    if (!userId) return noDataAvailable;
+    if (!userId || !listId) return noDataAvailable;
 
     const handler = Meteor.subscribe("tasks");
     const listHandler = Meteor.subscribe("lists");
@@ -73,8 +91,8 @@ const TaskForm = () => {
     const task: Partial<ITask> = {
       text,
       listId,
-      userId,
-      username,
+      creatorUserId: userId,
+      creatorUsername: username,
       lastEditedBy: username,
       lastEditedAt: new Date(),
     };
@@ -89,21 +107,6 @@ const TaskForm = () => {
     });
   };
 
-  const banUser = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const usernameOrEmail = e.currentTarget.textContent;
-    const banUserProps = {
-      usernameOrEmail,
-      listId,
-    };
-    Meteor.call("lists.banEditor", banUserProps, (error: Meteor.Error) => {
-      if (error) {
-        console.log(error.reason);
-      } else {
-        console.log(`${usernameOrEmail} was banned from this list`);
-      }
-    });
-  };
-
   const deleteTask = (taskId: string) => {
     setShowDeleteTaskConfirm(true);
     setTaskToDelete(taskId);
@@ -114,14 +117,16 @@ const TaskForm = () => {
     setTaskToEdit(taskId);
   };
 
-  const formatMetadata = (task: ITask) => {
-    const { username, lastEditedAt, createdAt, lastEditedBy } = task;
+  const openSettings = () => setShowSettingsModal(true);
+
+  const formatListMetadata = (task: ITask) => {
+    const { creatorUsername, lastEditedAt, createdAt, lastEditedBy } = task;
     const createdAtReadable = createdAt.toLocaleString();
     const lastEditedAtReadable = lastEditedAt.toLocaleString();
     return (
       <div style={{ display: "flex", flexDirection: "column" }}>
         {createdAtReadable === lastEditedAtReadable ? (
-          <Text type="secondary">{`created by ${username}`}</Text>
+          <Text type="secondary">{`created by ${creatorUsername}`}</Text>
         ) : (
           <Text type="secondary">{`edited by ${lastEditedBy}`}</Text>
         )}
@@ -130,45 +135,147 @@ const TaskForm = () => {
     );
   };
 
+  const handleSettingsModalOk = () => {
+    // rename list
+    if (list && list.listName !== renameList) {
+      const renamedList = { _id: listId, newName: renameList };
+      Meteor.call("lists.rename", renamedList, (error: Meteor.Error, result: string) => {
+        if (error) {
+          message.error(error.error);
+        } else {
+          message.success(result);
+        }
+      });
+    }
+
+    // ban user(s)
+    if (usersToBan.length) {
+      const banUserProps = { usersToBan, listId };
+      Meteor.call("lists.banEditors", banUserProps, (error: Meteor.Error, result: number) => {
+        if (error) {
+          message.error(error.error);
+        } else {
+          message.success(`${result} user${result > 1 ? "s" : ""} banned`);
+        }
+      });
+    }
+
+    setShowSettingsModal(false);
+  };
+
+  const handleCancel = () => setShowSettingsModal(false);
+
+  const handleRenameListChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRenameList(e.target.value);
+  };
+
+  const deleteList = () => {
+    Meteor.call("lists.delete", listId, (error: Meteor.Error, result: string) => {
+      if (error) {
+        message.error(error.error);
+      } else {
+        message.success(result);
+        navigate(`/profile/${username}`);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (list && list.listName !== renameList) {
+      setRenameList(renameList);
+    }
+  }, [list]);
+
+  useEffect(() => {
+    if (list?.editors) {
+      const emailOrUsernames = list.editors
+        .map((editor) => editor.editorUsername || editor.email)
+        .filter((editor) => editor && !usersToBan.includes(editor)) as string[];
+      setEditorsEmailOrUsername(emailOrUsernames);
+    }
+  }, [showSettingsModal]);
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={1}>{list?.listName}</Title>
       </div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+        <Button onClick={openSettings} size="small" icon={<SettingOutlined />}>
+          list settings
+        </Button>
+      </div>
+      <Modal
+        title="List Settings"
+        open={showSettingsModal}
+        onOk={handleSettingsModalOk}
+        onCancel={handleCancel}
+      >
+        {isListOwner || (list?.editorsCanInvite && <Text>Invite Editors</Text>)}
+        {isListOwner && (
+          <>
+            <div>
+              <Title level={5}>Rename List</Title>
+              <Input
+                style={{ marginBottom: "10px" }}
+                maxLength={30}
+                size="large"
+                defaultValue={list?.listName}
+                onChange={handleRenameListChange}
+                onPressEnter={handleSettingsModalOk}
+              />
+            </div>
+            <div style={{ margin: "10px" }}>
+              <Title level={5}>{"Ban User(s)"}</Title>
+            </div>
+            <div>
+              <Select
+                mode="multiple"
+                placeholder="Inserted are removed"
+                value={usersToBan}
+                onChange={setUsersToBan}
+                style={{ width: "100%" }}
+                options={editorsEmailOrUsername
+                  .filter((user) => !usersToBan.includes(user))
+                  .map((item) => ({
+                    value: item,
+                    label: item,
+                  }))}
+              />
+            </div>
+            <div style={{ margin: "10px" }}>
+              <Button danger size="small" onClick={deleteList}>
+                Delete List
+              </Button>
+            </div>
+          </>
+        )}
+      </Modal>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={4}>{"Editors"}</Title>
       </div>
       <div style={{ marginBottom: "10px", display: "flex", justifyContent: "center" }}>
         {list && (
-          <Avatar.Group
-            maxCount={4}
-            maxPopoverTrigger="click"
-            size="large"
-            maxStyle={{ color: "#f56a00", backgroundColor: "#fde3cf", cursor: "pointer" }}
-          >
-            {list?.editors.map((editor: IEditor) => {
+          <Avatar.Group maxCount={4} maxPopoverTrigger="click" size="large">
+            <Tooltip key={list.ownerId} title={list.ownerUsername} placement="top">
+              <Avatar style={{ backgroundColor: avatarHexColors[0] }}>
+                {list.ownerUsername[0].toLocaleUpperCase()}
+              </Avatar>
+            </Tooltip>
+            {list?.editors.map((editor: IEditor, i: number) => {
               const emailOrUsername = editor.editorUsername ?? editor.email;
               const initial = emailOrUsername?.[0];
               return (
                 <Tooltip key={emailOrUsername} title={emailOrUsername} placement="top">
-                  <Avatar style={{ backgroundColor: "#f56a00" }}>{initial?.toUpperCase()}</Avatar>
+                  <Avatar style={{ backgroundColor: avatarHexColors[i + 1] || "#f56a00" }}>
+                    {initial?.toUpperCase()}
+                  </Avatar>
                 </Tooltip>
               );
             })}
-            {/* <Avatar style={{ backgroundColor: "#1677ff" }} icon={<AntDesignOutlined />} /> */}
           </Avatar.Group>
         )}
       </div>
-      {isListOwner && (
-        <div style={{ marginBottom: "10px" }}>
-          <Title level={4}>{"Ban Users"}</Title>
-          {list?.editors.map((editor: IEditor, i: number) => (
-            <button onClick={banUser} key={`${editor.email}+${i}`}>
-              {editor.editorUsername ? editor.editorUsername : editor.email}
-            </button>
-          ))}
-        </div>
-      )}
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Form
           form={form}
@@ -226,7 +333,7 @@ const TaskForm = () => {
               <Skeleton avatar title={false} loading={false} active>
                 <List.Item.Meta
                   title={<a href="https://ant.design">{task.text}</a>}
-                  description={formatMetadata(task)}
+                  description={formatListMetadata(task)}
                 />
                 {taskToDelete == task._id && showDeleteTaskConfirm && (
                   <DeleteTask

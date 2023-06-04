@@ -37,7 +37,7 @@ export default function NewList() {
   const makeNewList = (e: INewList) => {
     const { listName, editorsCanInvite } = e;
 
-    const inValidEmailAddresses = tags.filter(email => !EMAIL_VALIDATOR.test(email));
+    const inValidEmailAddresses = tags.filter((email) => !EMAIL_VALIDATOR.test(email));
 
     if (inValidEmailAddresses.length) {
       throw new Error("One or more email address is in an invalid format");
@@ -47,7 +47,7 @@ export default function NewList() {
 
     (async () => {
       const editors: IEditor[] = await Promise.all(
-        editorUsernamesOrEmails.map(async usernameOrEmail => {
+        editorUsernamesOrEmails.map(async (usernameOrEmail) => {
           const isEmail = (usernameOrEmail: string) => /@/g.test(usernameOrEmail);
           const email = isEmail(usernameOrEmail);
 
@@ -113,7 +113,7 @@ export default function NewList() {
   }, [inputValue]);
 
   const handleClose = (removedTag: string, tagList: string[], tagName: string) => {
-    const newTags = tagList.filter(tag => tag !== removedTag);
+    const newTags = tagList.filter((tag) => tag !== removedTag);
     if (tagName === "tags") setTags(newTags);
     if (tagName === "editorsUsernames") setEditorsUsernames(newTags);
   };
@@ -159,7 +159,10 @@ export default function NewList() {
         wrapperCol={{ span: 12, offset: 0 }}
         label="List name"
         name="listName"
-        rules={[{ required: true, message: "Please name your list" }]}
+        rules={[
+          { required: true, message: "Please name your list" },
+          { max: 30, message: "List name cannot exceed 30 characters" },
+        ]}
       >
         <Input size="middle" />
       </Form.Item>
@@ -200,7 +203,7 @@ export default function NewList() {
               onClose={() => handleClose(tag, tags, "tags")}
             >
               <span
-                onDoubleClick={e => {
+                onDoubleClick={(e) => {
                   if (index !== 0) {
                     setEditInputIndex(index);
                     setEditInputValue(tag);
@@ -249,7 +252,7 @@ export default function NewList() {
               onClose={() => handleClose(tag, editorsUsernames, "editorsUsernames")}
             >
               <span
-                onDoubleClick={e => {
+                onDoubleClick={(e) => {
                   if (index !== 0) {
                     setEditInputIndex(index);
                     setEditInputValue(tag);

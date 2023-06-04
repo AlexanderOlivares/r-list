@@ -4,15 +4,15 @@ import { ITask, TasksCollection } from "../collections/TasksCollection";
 
 Meteor.methods({
   "tasks.insert"(task: Partial<ITask>) {
-    const { text, listId, userId, lastEditedAt, lastEditedBy, username } = task;
+    const { text, listId, creatorUserId, lastEditedAt, lastEditedBy, creatorUsername } = task;
     check(text, String);
     check(listId, String);
-    check(userId, String);
+    check(creatorUserId, String);
     check(lastEditedAt, Date);
     check(lastEditedBy, String);
-    check(username, String);
+    check(creatorUsername, String);
 
-    if (!this.userId || userId !== userId) {
+    if (!this.userId || this.userId !== creatorUserId) {
       throw new Meteor.Error("Not authorized.");
     }
 
@@ -22,8 +22,8 @@ Meteor.methods({
       lastEditedBy,
       lastEditedAt,
       createdAt: new Date(),
-      userId: this.userId,
-      username,
+      creatorUserId: this.userId,
+      creatorUsername,
     });
 
     return taskId;
@@ -42,15 +42,24 @@ Meteor.methods({
     return "Task deleted";
   },
   "tasks.edit"(task: ITask) {
-    const { _id, text, listId, userId, lastEditedAt, createdAt, lastEditedBy, username } = task;
+    const {
+      _id,
+      text,
+      listId,
+      creatorUserId,
+      lastEditedAt,
+      createdAt,
+      lastEditedBy,
+      creatorUsername,
+    } = task;
     check(_id, String);
     check(text, String);
     check(listId, String);
-    check(userId, String);
+    check(creatorUserId, String);
     check(lastEditedAt, Date);
     check(createdAt, Date);
     check(lastEditedBy, String);
-    check(username, String);
+    check(creatorUsername, String);
 
     const taskFound = TasksCollection.findOne({ _id });
 

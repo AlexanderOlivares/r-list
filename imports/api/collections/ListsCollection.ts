@@ -5,6 +5,7 @@ export interface IList {
   _id: string;
   listName: string;
   ownerId: string;
+  ownerUsername: string;
   bannedEditors: string[];
   createdAt: Date;
   editors: IEditor[];

@@ -1,4 +1,5 @@
 import { Mongo } from "meteor/mongo";
+
 export interface ITask {
   _id: string;
   text: string;
@@ -6,8 +7,8 @@ export interface ITask {
   lastEditedBy: string;
   createdAt: Date;
   lastEditedAt: Date;
-  userId: string;
-  username: string;
+  creatorUserId: string;
+  creatorUsername: string;
 }
 
 export const TasksCollection = new Mongo.Collection<ITask>("tasks");
