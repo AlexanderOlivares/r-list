@@ -1,0 +1,2 @@
+.deploy/mup.js filter=git-crypt diff=git-crypt
+test/encryptMe.js filter=git-crypt diff=git-crypt
