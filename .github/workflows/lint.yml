@@ -1,0 +1,23 @@
+name: Lint
+
+on: [push]
+
+jobs:
+  lint:
+    name: Lint on push
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use node v16 
+      uses: actions/setup-node@v1
+      with: 
+        node-version: 14
+
+    - name: intsall dependencies
+      run: npm ci
+
+    - name: lint
+      run: npm run lint
