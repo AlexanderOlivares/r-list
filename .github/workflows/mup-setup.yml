@@ -15,7 +15,6 @@ jobs:
                   GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
 
             - name: Install meteor up
-              run: npm install mup
-
-            - name: Meteor setup 
-              run: npm run mup-setup
+              run: | 
+                npm install mup
+                npm run mup-setup
