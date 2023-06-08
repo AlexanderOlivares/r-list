@@ -1,4 +1,4 @@
-name: Setup Production
+name: Setup and deploy to production
 
 on: [workflow_dispatch]
 

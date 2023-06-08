@@ -10,7 +10,7 @@
     "fix-lint": "eslint --fix .",
     "tsc": "tsc --noEmit",
     "mup-setup": "cd .deploy && mup setup --verbose",
-    "mup-deploy": "mup deploy"
+    "mup-deploy": "cd .deploy && mup deploy"
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
