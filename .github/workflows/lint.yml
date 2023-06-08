@@ -1,4 +1,4 @@
-name: Lint
+name: Lint and type check 
 
 on: [push]
 
@@ -8,16 +8,23 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x]
+
     steps:
     - uses: actions/checkout@v3
 
-    - name: Use node v14 
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
-      with: 
-        node-version: "14.x"
+      with:
+        node-version: ${{ matrix.node-version }}
 
     - name: Install Dependencies
       run: npm install
 
     - name: Lint
       run: npm run lint
+
+    - name: Type check
+      run: npm run tsc
