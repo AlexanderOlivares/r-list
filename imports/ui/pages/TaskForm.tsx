@@ -330,7 +330,7 @@ const TaskForm = () => {
       </div>
       <div style={{ margin: "5px" }}>
         <List
-          className="demo-loadmore-list"
+          className="task-list"
           loading={false}
           itemLayout="horizontal"
           dataSource={tasks}
@@ -347,10 +347,7 @@ const TaskForm = () => {
               ]}
             >
               <Skeleton avatar title={false} loading={false} active>
-                <List.Item.Meta
-                  title={<a href="https://ant.design">{task.text}</a>}
-                  description={formatListMetadata(task)}
-                />
+                <List.Item.Meta title={task.text} description={formatListMetadata(task)} />
                 {taskToDelete == task._id && showDeleteTaskConfirm && (
                   <DeleteTask
                     taskId={taskToDelete}
