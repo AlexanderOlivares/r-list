@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ITask, TasksCollection } from "../../api/collections/TasksCollection";
 import { useTracker } from "meteor/react-meteor-data";
 import { useUserContext } from "../../../context/UserContext";
@@ -19,6 +19,7 @@ import {
   Modal,
   message,
   Select,
+  InputRef,
 } from "antd";
 import { onFinishFailed } from "./Login";
 import DeleteTask from "../components/DeleteTask";
@@ -33,6 +34,7 @@ const TaskForm = () => {
   const { _id: userId, username } = userContext.state ?? {};
   const [form] = Form.useForm();
   const { listId } = useParams();
+  const inputRef = useRef<InputRef | null>(null);
   const [showDeleteTaskConfirm, setShowDeleteTaskConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string>("");
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
@@ -180,6 +182,8 @@ const TaskForm = () => {
     });
   };
 
+  useEffect(() => inputRef?.current?.focus(), [inputRef.current]);
+
   useEffect(() => {
     if (list && list.listName !== renameList) {
       setRenameList(renameList);
@@ -300,7 +304,7 @@ const TaskForm = () => {
               },
             ]}
           >
-            <Input />
+            <Input ref={inputRef} />
           </Form.Item>
 
           <div style={{ display: "flex", justifyContent: "center" }}>
