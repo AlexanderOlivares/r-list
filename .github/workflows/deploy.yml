@@ -1,0 +1,55 @@
+name: Deploy
+
+on: 
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  lint:
+    name: Lint and type check
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Type check
+      run: npm run tsc
+
+  setup-production:
+    name: Deploy with mup
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+
+        - name: Unlock secrets
+          uses: sliteteam/github-action-git-crypt-unlock@1.2.0
+          env:
+              GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+
+        - name: Setup meteor env
+          uses: meteorengineer/setup-meteor@v1
+  
+        - name: Install meteor dependencies
+          run: meteor npm install
+
+        - name: Install mup and deploy
+          run: |
+            npm install mup
+            npm run mup-deploy
