@@ -26,6 +26,7 @@ import DeleteTask from "../components/DeleteTask";
 import EditTaskModal from "../components/EditTaskModal";
 import { avatarHexColors } from "../constants/avatarHexColors";
 import { SettingOutlined } from "@ant-design/icons";
+import InviteEditors from "../components/InviteEditors";
 const { Text } = Typography;
 
 const TaskForm = () => {
@@ -43,6 +44,8 @@ const TaskForm = () => {
   const [renameList, setRenameList] = useState("");
   const [editorsEmailOrUsername, setEditorsEmailOrUsername] = useState<string[]>([]);
   const [usersToBan, setUsersToBan] = useState<string[]>([]);
+  // FOR UPCOMING FEAT
+  // const [editorsUsernames, setEditorsUsernames] = useState<string[]>([]);
 
   const { list, tasks, isListOwner } = useTracker(() => {
     const taskArray: ITask[] = [];
@@ -229,8 +232,17 @@ const TaskForm = () => {
                 onPressEnter={handleSettingsModalOk}
               />
             </div>
+
+            <div>
+              <Title level={5}>Invite Editors</Title>
+              <InviteEditors setEditorUsernameTags={setEditorsEmailOrUsername} />
+              <Title level={5}>Or by Email</Title>
+              {/* <InviteEditorsByEmail /> */}
+            </div>
             <div style={{ margin: "10px" }}>
-              <Title level={5}>{"Ban User(s)"}</Title>
+              <Title type="danger" level={5}>
+                {"Ban User(s)"}
+              </Title>
             </div>
             <div>
               <Select
@@ -247,9 +259,9 @@ const TaskForm = () => {
                   }))}
               />
             </div>
-            <div style={{ margin: "10px" }}>
+            <div style={{ marginTop: "20px" }}>
               <Button danger size="small" onClick={deleteList}>
-                Delete List
+                <Text type="danger">Delete List</Text>
               </Button>
             </div>
           </>

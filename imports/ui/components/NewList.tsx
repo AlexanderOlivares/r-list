@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Meteor } from "meteor/meteor";
-import { Button, Form, Input, Checkbox, Tag, Tooltip } from "antd";
+import { Button, Form, Input, Checkbox, Tag } from "antd";
 import { onFinishFailed } from "../pages/Login";
 import InviteEditors from "./InviteEditors";
-import type { InputRef } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
 import Title from "antd/lib/typography/Title";
+import InviteEditorsByEmail from "./InviteEditorsByEmail";
 
 export interface IEditor {
   email?: string;
@@ -25,12 +24,6 @@ export default function NewList() {
   const navigate = useNavigate();
   const [editorsUsernames, setEditorsUsernames] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [inputVisible, setInputVisible] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const [editInputIndex, setEditInputIndex] = useState(-1);
-  const [editInputValue, setEditInputValue] = useState("");
-  const inputRef = useRef<InputRef>(null);
-  const editInputRef = useRef<InputRef>(null);
 
   const EMAIL_VALIDATOR = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
@@ -45,9 +38,11 @@ export default function NewList() {
 
     const editorUsernamesOrEmails = [...tags, ...editorsUsernames];
 
+    // TODO MAKE THIS IT'S OWN FUNC
     (async () => {
       const editors: IEditor[] = await Promise.all(
         editorUsernamesOrEmails.map(async (usernameOrEmail) => {
+          // TODO MAKE THIS IT'S OWN FUNC
           const isEmail = (usernameOrEmail: string) => /@/g.test(usernameOrEmail);
           const email = isEmail(usernameOrEmail);
 
@@ -65,7 +60,7 @@ export default function NewList() {
                 (error: Meteor.Error, result: Meteor.User) => {
                   if (error) {
                     console.log(error.reason);
-                    reject(error);
+                    reject(error.reason);
                   } else {
                     editorId = result._id;
                     editorUsername = result.username;
@@ -104,44 +99,10 @@ export default function NewList() {
     })();
   };
 
-  useEffect(() => {
-    if (inputVisible) inputRef.current?.focus();
-  }, [inputVisible]);
-
-  useEffect(() => {
-    editInputRef.current?.focus();
-  }, [inputValue]);
-
   const handleClose = (removedTag: string, tagList: string[], tagName: string) => {
     const newTags = tagList.filter((tag) => tag !== removedTag);
     if (tagName === "tags") setTags(newTags);
     if (tagName === "editorsUsernames") setEditorsUsernames(newTags);
-  };
-
-  const showInput = () => setInputVisible(true);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleInputConfirm = () => {
-    if (inputValue && tags.indexOf(inputValue) === -1) {
-      setTags([...tags, inputValue]);
-    }
-    setInputVisible(false);
-    setInputValue("");
-  };
-
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditInputValue(e.target.value);
-  };
-
-  const handleEditInputConfirm = () => {
-    const newTags = [...tags];
-    newTags[editInputIndex] = editInputValue;
-    setTags(newTags);
-    setEditInputIndex(-1);
-    setInputValue("");
   };
 
   return (
@@ -166,84 +127,23 @@ export default function NewList() {
       >
         <Input size="middle" />
       </Form.Item>
-
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={4}>Invite Friends to Edit</Title>
       </div>
-
       <Form.Item
         style={{ display: "flex", justifyContent: "center" }}
         wrapperCol={{ span: 12, offset: 0 }}
-        // label="by username"
         name="editors"
       >
-        {tags.map((tag, index) => {
-          if (editInputIndex === index) {
-            return (
-              <Input
-                ref={editInputRef}
-                key={tag}
-                size="large"
-                className="tag-input"
-                value={editInputValue}
-                onChange={handleEditInputChange}
-                onBlur={handleEditInputConfirm}
-                onPressEnter={handleEditInputConfirm}
-              />
-            );
-          }
-
-          const isLongTag = tag.length > 20;
-
-          const tagElem = (
-            <Tag
-              className="edit-tag"
-              key={tag}
-              closable={true}
-              onClose={() => handleClose(tag, tags, "tags")}
-            >
-              <span
-                onDoubleClick={(e) => {
-                  if (index !== 0) {
-                    setEditInputIndex(index);
-                    setEditInputValue(tag);
-                    e.preventDefault();
-                  }
-                }}
-              >
-                {isLongTag ? `${tag.slice(0, 20)}...` : tag}
-              </span>
-            </Tag>
-          );
-          return isLongTag ? (
-            <Tooltip title={tag} key={tag}>
-              {tagElem}
-            </Tooltip>
-          ) : (
-            tagElem
-          );
-        })}
-        {inputVisible && (
-          <Input
-            ref={inputRef}
-            type="email"
-            size="middle"
-            className="tag-input"
-            value={inputValue}
-            onChange={handleInputChange}
-            onBlur={handleInputConfirm}
-            onPressEnter={handleInputConfirm}
-          />
-        )}
-        {!inputVisible && (
-          <Tag className="site-tag-plus" onClick={showInput}>
-            <PlusOutlined /> add editor email
-          </Tag>
-        )}
+        <InviteEditorsByEmail
+          tags={tags}
+          setTags={setTags}
+          setEditorsUsernames={setEditorsUsernames}
+        />
       </Form.Item>
-
       <div style={{ marginBottom: "10px" }}>
-        {editorsUsernames.map((tag, index) => {
+        {editorsUsernames.map((tag) => {
+          // FIXME styling is crap
           return (
             <Tag
               className="edit-tag"
@@ -251,22 +151,11 @@ export default function NewList() {
               closable={true}
               onClose={() => handleClose(tag, editorsUsernames, "editorsUsernames")}
             >
-              <span
-                onDoubleClick={(e) => {
-                  if (index !== 0) {
-                    setEditInputIndex(index);
-                    setEditInputValue(tag);
-                    e.preventDefault();
-                  }
-                }}
-              >
-                {tag}
-              </span>
+              {tag}
             </Tag>
           );
         })}
       </div>
-
       <Form.Item
         style={{ maxWidth: "80%", margin: "auto", paddingBottom: "20px" }}
         wrapperCol={{ span: 12, offset: 0 }}
@@ -275,7 +164,6 @@ export default function NewList() {
       >
         <InviteEditors setEditorUsernameTags={setEditorsUsernames} />
       </Form.Item>
-
       <Form.Item
         style={{ display: "flex", justifyContent: "center" }}
         name="editorsCanInvite"
@@ -283,7 +171,6 @@ export default function NewList() {
       >
         <Checkbox>Editors can invite others</Checkbox>
       </Form.Item>
-
       <Form.Item style={{ display: "flex", justifyContent: "center" }}>
         <Button type="primary" htmlType="submit">
           create list
