@@ -20,6 +20,7 @@ import {
   message,
   Select,
   InputRef,
+  Tag,
 } from "antd";
 import { onFinishFailed } from "./Login";
 import DeleteTask from "../components/DeleteTask";
@@ -27,6 +28,8 @@ import EditTaskModal from "../components/EditTaskModal";
 import { avatarHexColors } from "../constants/avatarHexColors";
 import { SettingOutlined } from "@ant-design/icons";
 import InviteEditors from "../components/InviteEditors";
+import InviteEditorsByEmail from "../components/InviteEditorsByEmail";
+import { buildEditorBase } from "../utils";
 const { Text } = Typography;
 
 const TaskForm = () => {
@@ -44,8 +47,7 @@ const TaskForm = () => {
   const [renameList, setRenameList] = useState("");
   const [editorsEmailOrUsername, setEditorsEmailOrUsername] = useState<string[]>([]);
   const [usersToBan, setUsersToBan] = useState<string[]>([]);
-  // FOR UPCOMING FEAT
-  // const [editorsUsernames, setEditorsUsernames] = useState<string[]>([]);
+  const [editors, setEditors] = useState<string[]>([]);
 
   const { list, tasks, isListOwner } = useTracker(() => {
     const taskArray: ITask[] = [];
@@ -124,6 +126,11 @@ const TaskForm = () => {
 
   const openSettings = () => setShowSettingsModal(true);
 
+  const handleClose = (removedTag: string, tagList: string[]) => {
+    const newTags = tagList.filter((tag) => tag !== removedTag);
+    setEditors(newTags);
+  };
+
   const formatListMetadata = (task: ITask) => {
     const { creatorUsername, lastEditedAt, createdAt, lastEditedBy } = task;
     const createdAtReadable = createdAt.toLocaleString();
@@ -140,9 +147,9 @@ const TaskForm = () => {
     );
   };
 
-  const handleSettingsModalOk = () => {
+  const handleSettingsModalOk = async () => {
     // rename list
-    if (list && list.listName !== renameList) {
+    if (list && renameList && list.listName !== renameList) {
       const renamedList = { _id: listId, newName: renameList };
       Meteor.call("lists.rename", renamedList, (error: Meteor.Error, result: string) => {
         if (error) {
@@ -153,6 +160,31 @@ const TaskForm = () => {
       });
     }
 
+    // add editors(s)
+    if (editors.length) {
+      (async () => {
+        const formattedEditors: IEditor[] = await Promise.all(
+          editors.map(async (usernameOrEmail) => {
+            return buildEditorBase(usernameOrEmail);
+          })
+        );
+
+        const addEditors = {
+          formattedEditors,
+          listId,
+        };
+
+        Meteor.call("lists.addEditors", addEditors, (error: Meteor.Error, result: number) => {
+          if (error) {
+            message.error(error.error);
+          } else {
+            message.success(`${result} editor${result > 1 ? "s" : ""} added`);
+            setEditors([]);
+          }
+        });
+      })();
+    }
+
     // ban user(s)
     if (usersToBan.length) {
       const banUserProps = { usersToBan, listId };
@@ -161,6 +193,7 @@ const TaskForm = () => {
           message.error(error.error);
         } else {
           message.success(`${result} user${result > 1 ? "s" : ""} banned`);
+          setUsersToBan([]);
         }
       });
     }
@@ -185,13 +218,9 @@ const TaskForm = () => {
     });
   };
 
-  useEffect(() => inputRef?.current?.focus(), [inputRef.current]);
-
   useEffect(() => {
-    if (list && list.listName !== renameList) {
-      setRenameList(renameList);
-    }
-  }, [list]);
+    !showSettingsModal && inputRef?.current?.focus();
+  }, [inputRef.current]);
 
   useEffect(() => {
     if (list?.editors) {
@@ -207,21 +236,53 @@ const TaskForm = () => {
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Title level={1}>{list?.listName}</Title>
       </div>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
-        <Button onClick={openSettings} size="small" icon={<SettingOutlined />}>
-          list settings
-        </Button>
-      </div>
+      {(isListOwner || list?.editorsCanInvite) && (
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+          <Button onClick={openSettings} size="small" icon={<SettingOutlined />}>
+            list settings
+          </Button>
+        </div>
+      )}
       <Modal
         title="List Settings"
         open={showSettingsModal}
         onOk={handleSettingsModalOk}
         onCancel={handleCancel}
       >
-        {isListOwner || (list?.editorsCanInvite && <Text>Invite Editors</Text>)}
-        {isListOwner && (
+        {(isListOwner || list?.editorsCanInvite) && (
           <>
             <div>
+              <Title level={3}>Invite Editors</Title>
+              <div style={{ marginBottom: "10px" }}>
+                {editors.map((tag) => {
+                  return (
+                    <Tag
+                      className="edit-tag"
+                      key={tag}
+                      closable={true}
+                      onClose={() => handleClose(tag, editors)}
+                    >
+                      {tag}
+                    </Tag>
+                  );
+                })}
+              </div>
+              <Text type="secondary">By Username</Text>
+              <div>
+                <InviteEditors setEditorUsernameTags={setEditors} />
+              </div>
+              <div style={{ marginTop: "10px" }}>
+                <Text type="secondary">By Email</Text>
+              </div>
+              <div style={{ marginTop: "10px" }}>
+                <InviteEditorsByEmail tags={editors} setEditorsUsernames={setEditors} />
+              </div>
+            </div>
+          </>
+        )}
+        {isListOwner && (
+          <>
+            <div style={{ marginTop: "15px" }}>
               <Title level={5}>Rename List</Title>
               <Input
                 style={{ marginBottom: "10px" }}
@@ -233,13 +294,7 @@ const TaskForm = () => {
               />
             </div>
 
-            <div>
-              <Title level={5}>Invite Editors</Title>
-              <InviteEditors setEditorUsernameTags={setEditorsEmailOrUsername} />
-              <Title level={5}>Or by Email</Title>
-              {/* <InviteEditorsByEmail /> */}
-            </div>
-            <div style={{ margin: "10px" }}>
+            <div style={{}}>
               <Title type="danger" level={5}>
                 {"Ban User(s)"}
               </Title>

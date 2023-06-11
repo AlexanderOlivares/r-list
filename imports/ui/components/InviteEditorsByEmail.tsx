@@ -1,117 +1,53 @@
-import React, { useRef, useState } from "react";
-import { Input, InputRef, Tag, Tooltip } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import React, { useState } from "react";
+import { Button, Input, Typography, message } from "antd";
+const { Text } = Typography;
 
 interface IProps {
   setEditorsUsernames: React.Dispatch<React.SetStateAction<string[]>>;
-  setTags: React.Dispatch<React.SetStateAction<string[]>>;
   tags: string[];
 }
 
-export default function InviteEditorsByEmail({ tags, setEditorsUsernames, setTags }: IProps) {
-  const [inputVisible, setInputVisible] = useState(false);
+export default function InviteEditorsByEmail({ tags, setEditorsUsernames }: IProps) {
   const [inputValue, setInputValue] = useState("");
-  const [editInputIndex, setEditInputIndex] = useState(-1);
-  const [editInputValue, setEditInputValue] = useState("");
-  const inputRef = useRef<InputRef>(null);
-  const editInputRef = useRef<InputRef>(null);
-
-  const handleClose = (removedTag: string, tagList: string[], tagName: string) => {
-    const newTags = tagList.filter((tag) => tag !== removedTag);
-    if (tagName === "tags") setTags(newTags);
-    if (tagName === "editorsUsernames") setEditorsUsernames(newTags);
-  };
-
-  const showInput = () => setInputVisible(true);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  const handleInputConfirm = () => {
-    if (inputValue && tags.indexOf(inputValue) === -1) {
-      setTags([...tags, inputValue]);
+  const EMAIL_VALIDATOR = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+
+  const handleInputConfirm = (e?: React.KeyboardEvent<HTMLInputElement> | null) => {
+    if (e) e.preventDefault();
+
+    if (!EMAIL_VALIDATOR.test(inputValue)) {
+      return message.error("Invalid email address format");
     }
-    setInputVisible(false);
+
+    if (inputValue && tags.indexOf(inputValue) === -1) {
+      setEditorsUsernames((prev) => [...prev, inputValue]);
+    }
+
     setInputValue("");
   };
 
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditInputValue(e.target.value);
-  };
+  const clickConfirm = () => handleInputConfirm(null);
 
-  const handleEditInputConfirm = () => {
-    const newTags = [...tags];
-    newTags[editInputIndex] = editInputValue;
-    setTags(newTags);
-    setEditInputIndex(-1);
-    setInputValue("");
-  };
   return (
     <>
-      {tags.map((tag, index) => {
-        if (editInputIndex === index) {
-          return (
-            <Input
-              ref={editInputRef}
-              key={tag}
-              size="large"
-              className="tag-input"
-              value={editInputValue}
-              onChange={handleEditInputChange}
-              onBlur={handleEditInputConfirm}
-              onPressEnter={handleEditInputConfirm}
-            />
-          );
-        }
-
-        const isLongTag = tag.length > 20;
-
-        const tagElem = (
-          <Tag
-            className="edit-tag"
-            key={tag}
-            closable={true}
-            onClose={() => handleClose(tag, tags, "tags")}
-          >
-            <span
-              onDoubleClick={(e) => {
-                if (index !== 0) {
-                  setEditInputIndex(index);
-                  setEditInputValue(tag);
-                  e.preventDefault();
-                }
-              }}
-            >
-              {isLongTag ? `${tag.slice(0, 20)}...` : tag}
-            </span>
-          </Tag>
-        );
-        return isLongTag ? (
-          <Tooltip title={tag} key={tag}>
-            {tagElem}
-          </Tooltip>
-        ) : (
-          tagElem
-        );
-      })}
-      {inputVisible && (
-        <Input
-          ref={inputRef}
-          type="email"
-          size="middle"
-          className="tag-input"
-          value={inputValue}
-          onChange={handleInputChange}
-          onBlur={handleInputConfirm}
-          onPressEnter={handleInputConfirm}
-        />
-      )}
-      {!inputVisible && (
-        <Tag className="site-tag-plus" onClick={showInput}>
-          <PlusOutlined /> add editor email
-        </Tag>
-      )}
+      <Input
+        type="email"
+        size="middle"
+        className="tag-input"
+        value={inputValue}
+        onChange={handleInputChange}
+        onPressEnter={(e) => handleInputConfirm(e)}
+        placeholder="friend@email.com"
+      />
+      <div style={{ marginTop: "20px" }}>
+        <Button size="small" onClick={() => clickConfirm()}>
+          <Text>Add email</Text>
+        </Button>
+      </div>
     </>
   );
 }
