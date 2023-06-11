@@ -1,6 +1,8 @@
 import { Meteor } from "meteor/meteor";
 import { IEditor } from "./components/NewList";
 
+export const EMAIL_VALIDATOR = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+
 /*
 See if editor is already a user, and if so add their userId to the editor base
 */

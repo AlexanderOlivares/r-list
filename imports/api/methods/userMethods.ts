@@ -23,7 +23,7 @@ Meteor.methods({
 
     return user;
   },
-  "user.findUser": usernameOrEmail => {
+  "user.findUser": (usernameOrEmail) => {
     check(usernameOrEmail, String);
 
     const user = Meteor.users.findOne({
@@ -52,5 +52,18 @@ Meteor.methods({
     }
 
     return users;
+  },
+  "user.requestPasswordReset": (email) => {
+    check(email, String);
+
+    const user = Meteor.users.findOne({ "emails.0.address": email });
+
+    if (!user) {
+      throw new Meteor.Error("Password-reset", "No user account with that email");
+    }
+
+    Accounts.sendResetPasswordEmail(user._id, email);
+
+    return `Password reset sent to ${email}`;
   },
 });

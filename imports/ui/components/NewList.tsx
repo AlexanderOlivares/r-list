@@ -59,16 +59,6 @@ export default function NewList() {
     setEditors(newTags);
   };
 
-  const sendEmail = () => {
-    Meteor.call(
-      "sendEmail",
-      "virtualbookshelf.tech@gmail.com",
-      "test@rlist.lol",
-      "Hello from Meteor!",
-      "This is a test of Email.send."
-    );
-  };
-
   return (
     <>
       <Form
@@ -141,7 +131,6 @@ export default function NewList() {
           </Button>
         </Form.Item>
       </Form>
-      <button onClick={sendEmail}>test email</button>
     </>
   );
 }

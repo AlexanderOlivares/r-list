@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Input, Typography, message } from "antd";
+import { EMAIL_VALIDATOR } from "../utils";
 const { Text } = Typography;
 
 interface IProps {
@@ -13,8 +14,6 @@ export default function InviteEditorsByEmail({ tags, setEditorsUsernames }: IPro
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
-
-  const EMAIL_VALIDATOR = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
   const handleInputConfirm = (e?: React.KeyboardEvent<HTMLInputElement> | null) => {
     if (e) e.preventDefault();

@@ -24,7 +24,7 @@ export const App = () => {
       setLoading(false);
       return;
     }
-    Meteor.loginWithToken(storedLoginToken, error => {
+    Meteor.loginWithToken(storedLoginToken, (error) => {
       if (error) {
         console.log("no login token found");
       } else {
