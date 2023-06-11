@@ -3,6 +3,7 @@ import { Meteor } from "meteor/meteor";
 import { ListsCollection } from "../collections/ListsCollection";
 import { IEditor, INewList } from "/imports/ui/components/NewList";
 import { userIsListOwner } from "../utils";
+import { Email } from "meteor/email";
 
 Meteor.methods({
   "lists.insert"(newList: INewList) {
@@ -131,5 +132,15 @@ Meteor.methods({
     }
 
     return "List renamed";
+  },
+  sendEmail(to, from, subject, text) {
+    // Make sure that all arguments are strings.
+    check([to, from, subject, text], [String]);
+
+    // Let other method calls from the same client start running, without
+    // waiting for the email sending to complete.
+    this.unblock();
+
+    Email.send({ to, from, subject, text });
   },
 });
