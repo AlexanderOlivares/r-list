@@ -3,7 +3,6 @@ import { Meteor } from "meteor/meteor";
 import { ListsCollection } from "../collections/ListsCollection";
 import { IEditor, INewList } from "/imports/ui/components/NewList";
 import { sendInviteEmail, userIsListOwner } from "../utils";
-import { Email } from "meteor/email";
 
 Meteor.methods({
   async "lists.insert"(newList: INewList) {
