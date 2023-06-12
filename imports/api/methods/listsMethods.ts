@@ -2,7 +2,7 @@ import { check, Match } from "meteor/check";
 import { Meteor } from "meteor/meteor";
 import { ListsCollection } from "../collections/ListsCollection";
 import { IEditor, INewList } from "/imports/ui/components/NewList";
-import { userIsListOwner } from "../utils";
+import { sendInviteEmail, userIsListOwner } from "../utils";
 import { Email } from "meteor/email";
 
 Meteor.methods({
@@ -34,31 +34,11 @@ Meteor.methods({
       bannedEditors: [],
     });
 
-    (async () => {
-      await Promise.all(
-        editors.map(async (editor) => {
-          let email = editor.email;
-
-          if (!editor.email) {
-            const user = Meteor.users.findOne({
-              $or: [{ _id: editor.editorId }, { username: editor.editorUsername }],
-            });
-
-            if (user?.emails?.[0]?.address) {
-              email = user?.emails?.[0]?.address;
-            }
-          }
-
-          if (!email) return;
-
-          const url = Meteor.absoluteUrl();
-          const subject = `${listOwner.username} invited you to a shared list`;
-          const html = `Signup or login at <a href="${url}">${url}</a> to collaborate with ${listOwner.username}`;
-
-          Email.send({ to: email, from: "noreply@rlist.lol", subject, html });
-        })
-      );
-    })();
+    await Promise.all(
+      editors.map(async (editor: IEditor) => {
+        await sendInviteEmail(editor, listOwner.username, listOwner.username);
+      })
+    );
 
     return listId;
   },
@@ -89,14 +69,17 @@ Meteor.methods({
 
     return usersToBan.length;
   },
-  "lists.addEditors"({
+  async "lists.addEditors"({
     listId,
     formattedEditors,
+    username,
   }: {
     listId: string | undefined;
     formattedEditors: IEditor[];
+    username: string | undefined;
   }) {
     check(listId, String);
+    check(username, String);
     check(formattedEditors, Array);
     check(formattedEditors, [
       {
@@ -105,6 +88,18 @@ Meteor.methods({
         editorUsername: Match.Optional(String),
       },
     ]);
+
+    const list = ListsCollection.findOne({ _id: listId });
+
+    if (!list) {
+      throw new Meteor.Error("Error finding list. Please try again later");
+    }
+
+    const listOwnerUsername = list.ownerUsername;
+
+    if (!listOwnerUsername) {
+      throw new Meteor.Error("Error lookup up list owner");
+    }
 
     const editorsAdded = ListsCollection.update(
       { _id: listId },
@@ -120,6 +115,12 @@ Meteor.methods({
     if (!editorsAdded) {
       throw new Meteor.Error("Error adding editors. Please try again later");
     }
+
+    await Promise.all(
+      formattedEditors.map(async (editor: IEditor) => {
+        await sendInviteEmail(editor, listOwnerUsername, username);
+      })
+    );
 
     return formattedEditors.length;
   },
@@ -158,15 +159,5 @@ Meteor.methods({
     }
 
     return "List renamed";
-  },
-  sendEmail(to, from, subject, text) {
-    // Make sure that all arguments are strings.
-    check([to, from, subject, text], [String]);
-
-    // Let other method calls from the same client start running, without
-    // waiting for the email sending to complete.
-    this.unblock();
-
-    Email.send({ to, from, subject, text });
   },
 });

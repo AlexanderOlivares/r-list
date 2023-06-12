@@ -172,6 +172,7 @@ const TaskForm = () => {
         const addEditors = {
           formattedEditors,
           listId,
+          username,
         };
 
         Meteor.call("lists.addEditors", addEditors, (error: Meteor.Error, result: number) => {
