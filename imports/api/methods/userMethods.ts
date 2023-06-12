@@ -27,7 +27,7 @@ Meteor.methods({
     check(usernameOrEmail, String);
 
     const user = Meteor.users.findOne({
-      $or: [{ "emails.address": usernameOrEmail }, { username: usernameOrEmail }],
+      $or: [{ "emails.0.address": usernameOrEmail }, { username: usernameOrEmail }],
     });
 
     if (!user) {

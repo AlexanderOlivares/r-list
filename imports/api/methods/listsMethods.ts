@@ -6,7 +6,7 @@ import { userIsListOwner } from "../utils";
 import { Email } from "meteor/email";
 
 Meteor.methods({
-  "lists.insert"(newList: INewList) {
+  async "lists.insert"(newList: INewList) {
     const { listName, editors, editorsCanInvite } = newList;
     check(listName, String);
     check(editors, [
@@ -18,9 +18,9 @@ Meteor.methods({
     ]);
     check(editorsCanInvite, Boolean);
 
-    const user = Meteor.user();
+    const listOwner = Meteor.user();
 
-    if (!user || !user.username) {
+    if (!listOwner || !listOwner.username) {
       throw new Meteor.Error("Not authorized.");
     }
 
@@ -29,10 +29,36 @@ Meteor.methods({
       editors: [...editors],
       editorsCanInvite,
       createdAt: new Date(),
-      ownerId: user._id,
-      ownerUsername: user.username,
+      ownerId: listOwner._id,
+      ownerUsername: listOwner.username,
       bannedEditors: [],
     });
+
+    (async () => {
+      await Promise.all(
+        editors.map(async (editor) => {
+          let email = editor.email;
+
+          if (!editor.email) {
+            const user = Meteor.users.findOne({
+              $or: [{ _id: editor.editorId }, { username: editor.editorUsername }],
+            });
+
+            if (user?.emails?.[0]?.address) {
+              email = user?.emails?.[0]?.address;
+            }
+          }
+
+          if (!email) return;
+
+          const url = Meteor.absoluteUrl();
+          const subject = `${listOwner.username} invited you to a shared list`;
+          const html = `Signup or login at <a href="${url}">${url}</a> to collaborate with ${listOwner.username}`;
+
+          Email.send({ to: email, from: "noreply@rlist.lol", subject, html });
+        })
+      );
+    })();
 
     return listId;
   },
