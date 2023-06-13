@@ -21,8 +21,7 @@ function DeleteTask({ taskId, showDeleteTaskConfirm, setShowDeleteTaskConfirm }:
     });
   };
 
-  const cancel = (e?: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    console.log(e);
+  const cancel = () => {
     setShowDeleteTaskConfirm(false);
   };
 

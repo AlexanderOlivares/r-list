@@ -1,5 +1,5 @@
-import React, { useState, ChangeEvent } from "react";
-import { Modal, Input, Typography, message } from "antd";
+import React, { useState, ChangeEvent, useRef, useEffect } from "react";
+import { Modal, Input, Typography, message, InputRef } from "antd";
 const { Text } = Typography;
 import { ITask } from "/imports/api/collections/TasksCollection";
 import { Meteor } from "meteor/meteor";
@@ -17,6 +17,7 @@ const EditTaskModal: React.FC<IEditTaskModalProps> = ({
 }) => {
   const { text, lastEditedAt, lastEditedBy } = task;
   const [inputText, setInputText] = useState(text);
+  const editInputRef = useRef<InputRef | null>(null);
 
   const handleOk = () => {
     const updatedTask: ITask = {
@@ -42,6 +43,10 @@ const EditTaskModal: React.FC<IEditTaskModalProps> = ({
     setInputText(e.target.value);
   };
 
+  useEffect(() => {
+    showEditTaskModal && editInputRef.current?.focus();
+  }, []);
+
   return (
     <>
       <Modal
@@ -58,6 +63,7 @@ const EditTaskModal: React.FC<IEditTaskModalProps> = ({
           defaultValue={text}
           onChange={handleChange}
           onPressEnter={handleOk}
+          ref={editInputRef}
         />
         <Text type="secondary">{`last edited by ${lastEditedBy}`}</Text>
         <br />

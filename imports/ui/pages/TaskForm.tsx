@@ -220,7 +220,9 @@ const TaskForm = () => {
   };
 
   useEffect(() => {
-    !showSettingsModal && inputRef?.current?.focus();
+    if (!showSettingsModal && !showDeleteTaskConfirm && !showEditTaskModal) {
+      inputRef?.current?.focus();
+    }
   }, [inputRef.current]);
 
   useEffect(() => {
@@ -365,7 +367,6 @@ const TaskForm = () => {
             label="text"
             name="text"
             rules={[
-              { required: true, message: "List item cannot be empty" },
               {
                 max: 200,
                 message: "Input cannot exceed 200 characters",
