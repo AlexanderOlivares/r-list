@@ -29,11 +29,12 @@ import { avatarHexColors } from "../constants/avatarHexColors";
 import { SettingOutlined } from "@ant-design/icons";
 import InviteEditors from "../components/InviteEditors";
 import InviteEditorsByEmail from "../components/InviteEditorsByEmail";
-import { buildEditorBase } from "../utils";
+import useMediaQuery, { buildEditorBase } from "../utils";
 const { Text } = Typography;
 
 const TaskForm = () => {
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(576);
   const userContext = useUserContext();
   const { _id: userId, username } = userContext.state ?? {};
   const [form] = Form.useForm();
@@ -385,7 +386,7 @@ const TaskForm = () => {
           </div>
         </Form>
       </div>
-      <div style={{ margin: "5px" }}>
+      <div style={{ maxWidth: isMobile ? "100%" : "60%", margin: "auto" }}>
         <List
           className="task-list"
           loading={false}
