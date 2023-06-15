@@ -386,7 +386,7 @@ const TaskForm = () => {
           </div>
         </Form>
       </div>
-      <div style={{ maxWidth: isMobile ? "100%" : "60%", margin: "auto" }}>
+      <div style={{ maxWidth: isMobile ? "100%" : "50%", margin: "auto" }}>
         <List
           className="task-list"
           loading={false}
