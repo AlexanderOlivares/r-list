@@ -49,6 +49,7 @@ const TaskForm = () => {
   const [editorsEmailOrUsername, setEditorsEmailOrUsername] = useState<string[]>([]);
   const [usersToBan, setUsersToBan] = useState<string[]>([]);
   const [editors, setEditors] = useState<string[]>([]);
+  const [autoFocusInput, setAutoFocusInput] = useState<boolean>(true);
 
   const { list, tasks, isListOwner } = useTracker(() => {
     const taskArray: ITask[] = [];
@@ -111,6 +112,7 @@ const TaskForm = () => {
       } else {
         console.log("task insert result ", result);
         form.resetFields();
+        setAutoFocusInput(true);
       }
     });
   };
@@ -118,6 +120,7 @@ const TaskForm = () => {
   const deleteTask = (taskId: string) => {
     setShowDeleteTaskConfirm(true);
     setTaskToDelete(taskId);
+    setAutoFocusInput(false);
   };
 
   const editTask = (taskId: string) => {
@@ -221,7 +224,7 @@ const TaskForm = () => {
   };
 
   useEffect(() => {
-    if (!showSettingsModal && !showDeleteTaskConfirm && !showEditTaskModal) {
+    if (autoFocusInput) {
       inputRef?.current?.focus();
     }
   }, [inputRef.current]);
