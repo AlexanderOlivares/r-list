@@ -21,9 +21,9 @@ import {
   Select,
   InputRef,
   Tag,
+  Checkbox,
 } from "antd";
 import { onFinishFailed } from "./Login";
-import DeleteTask from "../components/DeleteTask";
 import EditTaskModal from "../components/EditTaskModal";
 import { avatarHexColors } from "../constants/avatarHexColors";
 import { SettingOutlined } from "@ant-design/icons";
@@ -41,7 +41,7 @@ const TaskForm = () => {
   const { listId } = useParams();
   const inputRef = useRef<InputRef | null>(null);
   const [showDeleteTaskConfirm, setShowDeleteTaskConfirm] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState<string>("");
+  const [tasksToDelete, setTasksToDelete] = useState<string[]>([]);
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<string>("");
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -117,13 +117,21 @@ const TaskForm = () => {
     });
   };
 
-  const deleteTask = (taskId: string) => {
-    setShowDeleteTaskConfirm(true);
-    setTaskToDelete(taskId);
+  const handleCheckboxToggle = (value: string) => {
     setAutoFocusInput(false);
+    const currentIndex = tasksToDelete.indexOf(value);
+    const newChecked = [...tasksToDelete];
+    if (currentIndex === -1) {
+      newChecked.push(value);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
+
+    setTasksToDelete(newChecked);
   };
 
   const editTask = (taskId: string) => {
+    setAutoFocusInput(false);
     setShowEditTaskModal(true);
     setTaskToEdit(taskId);
   };
@@ -223,6 +231,24 @@ const TaskForm = () => {
     });
   };
 
+  const handleClickDeleteTask = (taskId: string) => {
+    setAutoFocusInput(false);
+    setTasksToDelete([...new Set([...tasksToDelete, taskId])]);
+    setShowDeleteTaskConfirm(true);
+  };
+
+  const deleteTasks = () => {
+    Meteor.call("tasks.delete", tasksToDelete, (error: Meteor.Error, result: string) => {
+      if (error) {
+        message.error(error.error);
+      } else {
+        setTasksToDelete([]);
+        message.success(result);
+      }
+      setShowDeleteTaskConfirm(false);
+    });
+  };
+
   useEffect(() => {
     if (autoFocusInput) {
       inputRef?.current?.focus();
@@ -250,6 +276,14 @@ const TaskForm = () => {
           </Button>
         </div>
       )}
+      <Modal
+        title="Confirm"
+        open={showDeleteTaskConfirm}
+        onOk={deleteTasks}
+        onCancel={() => setShowDeleteTaskConfirm(false)}
+      >
+        {"Are you sure you want to delete selected items?"}
+      </Modal>
       <Modal
         title="List Settings"
         open={showSettingsModal}
@@ -402,20 +436,21 @@ const TaskForm = () => {
                 <a key="task-list-edit" onClick={() => editTask(task._id)}>
                   edit
                 </a>,
-                <a key="task-list-delete" onClick={() => deleteTask(task._id)}>
+                <a key="task-list-delete" onClick={() => handleClickDeleteTask(task._id)}>
                   delete
                 </a>,
               ]}
             >
+              <div>
+                <Checkbox
+                  style={{ marginRight: "10px", paddingRight: "15px" }}
+                  checked={tasksToDelete.includes(task._id)}
+                  disabled={false}
+                  onChange={() => handleCheckboxToggle(task._id)}
+                ></Checkbox>
+              </div>
               <Skeleton avatar title={false} loading={false} active>
                 <List.Item.Meta title={task.text} description={formatListMetadata(task)} />
-                {taskToDelete == task._id && showDeleteTaskConfirm && (
-                  <DeleteTask
-                    taskId={taskToDelete}
-                    showDeleteTaskConfirm={showDeleteTaskConfirm}
-                    setShowDeleteTaskConfirm={setShowDeleteTaskConfirm}
-                  />
-                )}
                 {taskToEdit == task._id && showEditTaskModal && (
                   <EditTaskModal
                     task={task}

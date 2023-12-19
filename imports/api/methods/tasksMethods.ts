@@ -28,18 +28,19 @@ Meteor.methods({
 
     return taskId;
   },
-  "tasks.delete"(taskId: string) {
-    check(taskId, String);
+  "tasks.delete"(taskIds: string[]) {
+    check(taskIds, [String]);
 
     const removed = TasksCollection.remove({
-      _id: taskId,
+      _id: { $in: taskIds },
     });
 
     if (!removed) {
-      throw new Meteor.Error("Error deleting task");
+      throw new Meteor.Error("Error deleting tasks");
     }
 
-    return "Task deleted";
+    const tasks = taskIds.length === 1 ? "Task" : "Tasks";
+    return `${tasks} deleted`;
   },
   "tasks.edit"(task: ITask) {
     const {
