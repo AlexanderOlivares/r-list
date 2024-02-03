@@ -13,6 +13,14 @@ jobs:
               uses: sliteteam/github-action-git-crypt-unlock@1.2.0
               env:
                   GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+            
+            - name: Install SSH key
+              uses: shimataro/ssh-key-action@v2
+              with:
+                key: ${{ secrets.SSH_KEY }}
+                name: id_rsa
+                known_hosts: ${{ secrets.KNOWN_HOSTS }}
+                if_key_exists: replace
 
             - name: Setup meteor env
               uses: meteorengineer/setup-meteor@v1
