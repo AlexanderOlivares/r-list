@@ -40,7 +40,7 @@ export async function sendInviteEmail(editor: IEditor, listOwner?: string, invit
 
     const inviterIsListOwner = listOwner === inviter;
 
-    const url = Meteor.absoluteUrl();
+    const url = Meteor.settings.public.url;
     const subject = `${inviter} invited you to a shared list`;
     const html = `Signup or login at <a href="${url}">${url}</a> to collaborate with ${inviter} on a shared list${
       !inviterIsListOwner ? " created by " + listOwner + "." : "."
